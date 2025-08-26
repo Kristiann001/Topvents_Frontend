@@ -5,6 +5,18 @@ function Holidays() {
   return (
     <>
       <Navbar />
+
+      {/* Hero Section */}
+      <div className="relative bg-teal-600 text-white py-20 px-6 text-center">
+        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
+          Holiday Getaways
+        </h1>
+        <p className="max-w-2xl mx-auto text-lg opacity-90">
+          Escape the ordinary and experience unforgettable holiday destinations,
+          where relaxation meets adventure and cherished memories are made.
+        </p>
+      </div>
+
       <div className="p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {/* Card 1 */}

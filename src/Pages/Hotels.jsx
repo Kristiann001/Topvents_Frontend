@@ -5,6 +5,18 @@ function Hotels() {
   return (
     <>
       <Navbar />
+      {/* Hero Section */}
+      <div className="relative bg-stone-700 text-white py-20 px-6 text-center">
+        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
+          Hotels & Stays
+        </h1>
+        <p className="max-w-2xl mx-auto text-lg opacity-90">
+          Discover comfort and elegance in our curated selection of hotels,
+          offering world-class hospitality, modern amenities, and unforgettable
+          experiences.
+        </p>
+      </div>
+
       <div className="p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {/* Card 1 */}
