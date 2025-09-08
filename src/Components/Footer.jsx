@@ -1,7 +1,7 @@
 function Footer() {
   return (
     <>
-      <footer className="bg-transparent backdrop-blur-lg rounded-sm shadow-md dark:bg-transparent mt-10 pt-10 border-t border-gray-300">
+      <footer className="bg-transparent backdrop-blur-lg rounded-sm shadow-md dark:bg-transparent mt-12 pt-12 border-t border-gray-300">
         <div className="w-full max-w-screen-xl mx-auto p-4 md:py-8">
           <div className="sm:flex sm:items-center sm:justify-between">
             <span className="self-center text-2xl font-bold whitespace-nowrap dark:text-black">

@@ -87,14 +87,14 @@ function Home() {
         {/* Upcoming Events Section */}
         <section className="p-6">
           {/* Header with View All link */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold text-left text-gray-900 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
+            <h2 className="text-3xl font-bold text-left text-gray-900">
               Upcoming Events
             </h2>
 
             <a
               href="/events"
-              className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
+              className="inline-flex items-center px-3 py-1.5 sm:py-2 text-sm sm:text-base font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-shadow shadow-md"
             >
               View All <span className="ml-1">&rarr;</span>
             </a>
@@ -220,13 +220,14 @@ function Home() {
         <section>
           <section className="p-6">
             {/* Header with View All link */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
               <h2 className="text-3xl font-bold text-left text-gray-900">
                 Escape to an Amazing Destination
               </h2>
+
               <a
                 href="/holidays"
-                className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
+                className="inline-flex items-center px-3 py-1.5 sm:py-2 text-sm sm:text-base font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-shadow shadow-md"
               >
                 View All <span className="ml-1">&rarr;</span>
               </a>

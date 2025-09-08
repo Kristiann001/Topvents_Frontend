@@ -1,7 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Load user from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.href = "/login"; // redirect to login
+  };
 
   return (
     <nav className="bg-transparent backdrop-blur-lg border-transparent shadow-md">
@@ -11,15 +41,12 @@ function Navbar() {
           TopVents
         </span>
 
-        {/* Mobile Menu Button (Hamburger) */}
+        {/* Mobile Menu Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           type="button"
           className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-black rounded-lg md:hidden hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-black"
-          aria-controls="navbar-search"
-          aria-expanded={isOpen ? "true" : "false"}
         >
-          <span className="sr-only">Open main menu</span>
           <svg
             className="w-5 h-5"
             aria-hidden="true"
@@ -37,116 +64,98 @@ function Navbar() {
           </svg>
         </button>
 
-        {/* Navigation Links (Desktop) */}
-        <div className="hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
+        {/* Navigation Links */}
+        <div className="hidden w-full md:flex md:w-auto md:order-1">
           <ul className="flex flex-col md:flex-row md:space-x-8 font-medium mt-4 md:mt-0 md:items-center">
-            <li>
-              <a
-                href="/home"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Home
-              </a>
-            </li>
-            <li>
-              <a
-                href="/events"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Events
-              </a>
-            </li>
-            <li>
-              <a
-                href="/holidays"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Holidays
-              </a>
-            </li>
-            <li>
-              <a
-                href="/hotels"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Hotels
-              </a>
-            </li>
+            <li><a href="/home" className="block py-2 px-3 text-black hover:text-green-700">Home</a></li>
+            <li><a href="/events" className="block py-2 px-3 text-black hover:text-green-700">Events</a></li>
+            <li><a href="/holidays" className="block py-2 px-3 text-black hover:text-green-700">Holidays</a></li>
+            <li><a href="/hotels" className="block py-2 px-3 text-black hover:text-green-700">Hotels</a></li>
           </ul>
         </div>
 
-        {/* Buttons for desktop view */}
-        <div className="hidden md:flex md:order-2 space-x-4">
-          <a href="/login">
-            <button className="bg-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
-              Login
-            </button>
-          </a>
-          <a href="/register">
-            <button className="bg-transparent border border-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
-              Register
-            </button>
-          </a>
-        </div>
-      </div>
+        {/* Right side: Avatar OR Auth Buttons */}
+        <div className="hidden md:flex md:order-2 space-x-4 items-center relative" ref={dropdownRef}>
+          {user ? (
+            <div className="relative">
+              {/* Avatar with Initial */}
+              <div
+                className="w-10 h-10 flex items-center justify-center rounded-full ring-2 ring-gray-300 dark:ring-gray-500 bg-green-600 text-white font-bold cursor-pointer"
+                onClick={() => setShowDropdown(!showDropdown)}
+              >
+                {user.name?.[0]?.toUpperCase()}
+              </div>
 
-      {/* Mobile Dropdown */}
-      <div
-        className={`md:hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0 overflow-hidden"
-        }`}
-      >
-        <ul className="flex flex-col font-medium p-4 space-y-3">
-          <li>
-            <a
-              href="/home"
-              className="block py-2 px-3 text-black hover:text-green-700"
-            >
-              Home
-            </a>
-          </li>
-          <li>
-            <a
-              href="/events"
-              className="block py-2 px-3 text-black hover:text-green-700"
-            >
-              Events
-            </a>
-          </li>
-          <li>
-            <a
-              href="/holidays"
-              className="block py-2 px-3 text-black hover:text-green-700"
-            >
-              Holidays
-            </a>
-          </li>
-          <li>
-            <a
-              href="/hotels"
-              className="block py-2 px-3 text-black hover:text-green-700"
-            >
-              Hotels
-            </a>
-          </li>
-
-          {/* Login / Signup buttons with spacing */}
-          <li className="mt-4">
-            <div className="flex flex-col space-y-3">
+              {/* Desktop Dropdown Menu */}
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg py-2 z-50">
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
               <a href="/login">
-                <button className="w-full bg-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
+                <button className="bg-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
                   Login
                 </button>
               </a>
               <a href="/register">
-                <button className="w-full bg-transparent border border-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
+                <button className="bg-transparent border border-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
                   Register
                 </button>
               </a>
-            </div>
-          </li>
-        </ul>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Mobile Links */}
+      {isOpen && (
+        <div className="md:hidden bg-white/90 backdrop-blur-lg border-t border-gray-200 shadow-md">
+          <ul className="flex flex-col py-2 px-4 space-y-2">
+            <li><a href="/home" className="block py-2 px-3 text-black hover:text-green-700">Home</a></li>
+            <li><a href="/events" className="block py-2 px-3 text-black hover:text-green-700">Events</a></li>
+            <li><a href="/holidays" className="block py-2 px-3 text-black hover:text-green-700">Holidays</a></li>
+            <li><a href="/hotels" className="block py-2 px-3 text-black hover:text-green-700">Hotels</a></li>
+
+            {user && (
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
+                >
+                  Logout
+                </button>
+              </li>
+            )}
+
+            {!user && (
+              <>
+                <li>
+                  <a href="/login">
+                    <button className="w-full bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition">
+                      Login
+                    </button>
+                  </a>
+                </li>
+                <li>
+                  <a href="/register">
+                    <button className="w-full border border-green-500 text-green-700 px-4 py-2 rounded-full hover:bg-green-500 hover:text-white transition">
+                      Register
+                    </button>
+                  </a>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+      )}
     </nav>
   );
 }
