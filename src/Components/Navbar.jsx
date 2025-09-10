@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { ShoppingCart } from "lucide-react"; // cart icon
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,29 +75,43 @@ function Navbar() {
           </ul>
         </div>
 
-        {/* Right side: Avatar OR Auth Buttons */}
-        <div className="hidden md:flex md:order-2 space-x-4 items-center relative" ref={dropdownRef}>
+        {/* Right side: Avatar + Cart OR Auth Buttons */}
+        <div
+          className="hidden md:flex md:order-2 space-x-4 items-center relative"
+          ref={dropdownRef}
+        >
           {user ? (
-            <div className="relative">
-              {/* Avatar with Initial */}
-              <div
-                className="w-10 h-10 flex items-center justify-center rounded-full ring-2 ring-gray-300 dark:ring-gray-500 bg-green-600 text-white font-bold cursor-pointer"
-                onClick={() => setShowDropdown(!showDropdown)}
-              >
-                {user.name?.[0]?.toUpperCase()}
-              </div>
-
-              {/* Desktop Dropdown Menu */}
+            <div className="flex items-center space-x-4 relative">
+              {/* Dropdown shown to the LEFT of avatar */}
               {showDropdown && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg py-2 z-50">
+                <div className="flex items-center bg-white border rounded-lg shadow-lg px-3 py-2">
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="text-sm text-gray-700 hover:text-red-600"
                   >
                     Logout
                   </button>
                 </div>
               )}
+
+              {/* Avatar */}
+              <div
+                className="w-10 h-10 flex items-center justify-center rounded-full ring-2 ring-gray-300 bg-green-600 text-white font-bold cursor-pointer"
+                onClick={() => setShowDropdown(!showDropdown)}
+              >
+                {user.name?.[0]?.toUpperCase()}
+              </div>
+
+              {/* Cart Icon */}
+              <a
+                href="/cart"
+                className="relative p-2 rounded-full hover:bg-green-100 transition"
+              >
+                <ShoppingCart className="w-6 h-6 text-green-600" />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                  0
+                </span>
+              </a>
             </div>
           ) : (
             <>
@@ -125,14 +140,25 @@ function Navbar() {
             <li><a href="/hotels" className="block py-2 px-3 text-black hover:text-green-700">Hotels</a></li>
 
             {user && (
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
-                >
-                  Logout
-                </button>
-              </li>
+              <>
+                <li>
+                  <a
+                    href="/cart"
+                    className="flex items-center space-x-2 bg-green-100 text-green-700 font-semibold py-2 px-3 rounded-lg hover:bg-green-200"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    <span>Cart</span>
+                  </a>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
             )}
 
             {!user && (

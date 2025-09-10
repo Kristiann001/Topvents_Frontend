@@ -1,53 +1,61 @@
 function Footer() {
   return (
-    <>
-      <footer className="bg-transparent backdrop-blur-lg rounded-sm shadow-md dark:bg-transparent mt-12 pt-12 border-t border-gray-300">
-        <div className="w-full max-w-screen-xl mx-auto p-4 md:py-8">
-          <div className="sm:flex sm:items-center sm:justify-between">
-            <span className="self-center text-2xl font-bold whitespace-nowrap dark:text-black">
-              TopVents
-            </span>
-            <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-black sm:mb-0 dark:text-black">
-              <li>
-                <a
-                  href="/events"
-                  className="hover:underline hover:text-green-700 me-4 md:me-6"
-                >
-                  Events
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/holidays"
-                  className="hover:underline hover:text-green-700 me-4 md:me-6"
-                >
-                  Holidays
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/hotels"
-                  className="hover:underline hover:text-green-700 me-4 md:me-6"
-                >
-                  Hotels
-                </a>
-              </li>
-            </ul>
-          </div>
-          <hr className="my-6 border-gray-300 sm:mx-auto dark:border-gray-700 lg:my-8 shadow-md" />
-          <span className="block text-sm text-black sm:text-center dark:text-black">
-            © 2025{" "}
+    <footer className="bg-transparent backdrop-blur-lg border-t border-gray-300 shadow-md mt-12">
+      <div className="max-w-screen-xl mx-auto px-6 py-8 md:py-12">
+        {/* Top Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          {/* Brand */}
+          <span className="text-2xl md:text-3xl font-bold text-black text-center md:text-left">
+            TopVents
+          </span>
+
+          {/* Links */}
+          <ul className="flex flex-col items-center space-y-3 md:space-y-0 md:flex-row md:space-x-8 text-sm font-medium text-black">
+            <li>
+              <a
+                href="/events"
+                className="hover:text-green-700 hover:underline transition"
+              >
+                Events
+              </a>
+            </li>
+            <li>
+              <a
+                href="/holidays"
+                className="hover:text-green-700 hover:underline transition"
+              >
+                Holidays
+              </a>
+            </li>
+            <li>
+              <a
+                href="/hotels"
+                className="hover:text-green-700 hover:underline transition"
+              >
+                Hotels
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* Divider */}
+        <hr className="my-6 md:my-8 border-gray-300 shadow-sm" />
+
+        {/* Bottom Note */}
+        <div className="text-center">
+          <span className="block text-xs md:text-sm text-black">
+            © {new Date().getFullYear()}{" "}
             <a
-              href="https://flowbite.com/"
-              className="hover:underline text-black"
+              href="/"
+              className="hover:underline text-black font-semibold"
             >
               TopVents™
             </a>
             . All Rights Reserved.
           </span>
         </div>
-      </footer>
-    </>
+      </div>
+    </footer>
   );
 }
 

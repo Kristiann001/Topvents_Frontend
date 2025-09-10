@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ import
+import { useNavigate } from "react-router-dom"; 
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
@@ -9,10 +9,11 @@ function Register() {
     email: "",
     password: "",
     password2: "",
+    role: "Customer", // ✅ default role
   });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); // ✅
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value });
@@ -33,6 +34,7 @@ function Register() {
           email: form.email,
           password: form.password,
           password2: form.password2,
+          role: form.role, // ✅ include role
         }),
       });
 
@@ -42,7 +44,7 @@ function Register() {
       setMessage("Registration successful ✅");
       console.log("Registered user:", data);
 
-      setTimeout(() => navigate("/login"), 1500); // ✅ redirect after 1.5s
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       setError(err.message);
     }
@@ -63,7 +65,7 @@ function Register() {
           {error && <p className="text-red-500 mb-3 text-center">{error}</p>}
           {message && <p className="text-green-600 mb-3 text-center">{message}</p>}
 
-          {/* NAME FIELD */}
+          {/* NAME */}
           <div className="mb-5">
             <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Your name
@@ -123,6 +125,22 @@ function Register() {
               className="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               required
             />
+          </div>
+
+          {/* ROLE DROPDOWN */}
+          <div className="mb-5">
+            <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Role
+            </label>
+            <select
+              id="role"
+              value={form.role}
+              onChange={handleChange}
+              className="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              <option value="Customer">Customer</option>
+              <option value="Admin">Admin</option>
+            </select>
           </div>
 
           <button
