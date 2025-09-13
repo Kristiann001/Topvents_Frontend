@@ -1,19 +1,19 @@
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
-function Hotels() {
+function Getaways() {
   return (
     <>
       <Navbar />
+
       {/* Hero Section */}
-      <div className="relative bg-stone-700 text-white py-20 px-6 text-center">
+      <div className="relative bg-teal-600 text-white py-20 px-6 text-center">
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
-          Hotels & Stays
+          Holiday Getaways
         </h1>
         <p className="max-w-2xl mx-auto text-lg opacity-90">
-          Discover comfort and elegance in our curated selection of hotels,
-          offering world-class hospitality, modern amenities, and unforgettable
-          experiences.
+          Escape the ordinary and experience unforgettable holiday destinations,
+          where relaxation meets adventure and cherished memories are made.
         </p>
       </div>
 
@@ -25,17 +25,18 @@ function Hotels() {
               <img
                 className="rounded-t-lg w-full h-48 object-cover"
                 src="https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=600&auto=format&fit=crop&q=60"
-                alt="PIYE Beach Resort"
+                alt="Beach Getaway"
               />
             </a>
             <div className="p-5">
               <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                PIYE Beach Resort
+                Beach Getaway
               </h5>
               <p className="mb-3 text-gray-700">
-                A luxurious coastal escape offering pristine beaches, oceanfront
-                suites, and world-class dining — perfect for relaxation and
-                romance.
+                Relax by the ocean with golden sands beneath your feet, sip
+                refreshing cocktails under palm trees, and watch breathtaking
+                sunsets right from your private balcony. Perfect for a romantic
+                escape or family retreat.
               </p>
               <a
                 href="#"
@@ -52,17 +53,18 @@ function Hotels() {
               <img
                 className="rounded-t-lg w-full h-48 object-cover"
                 src="https://images.unsplash.com/photo-1588858027324-cdd07d015c29?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bW91bnRhaW4lMjByZXRyZWF0fGVufDB8fDB8fHww"
-                alt="Everpeak Mountain Lodge"
+                alt="Mountain Retreat"
               />
             </a>
             <div className="p-5">
               <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                Everpeak Mountain Lodge
+                Mountain Retreat
               </h5>
               <p className="mb-3 text-gray-700">
-                Nestled high in the mountains, this serene lodge offers cozy
-                cabins, breathtaking views, and access to scenic hiking and
-                nature trails.
+                Escape to a serene mountain lodge surrounded by pine forests and
+                fresh alpine air. Explore scenic hiking trails, cozy up by the
+                fireplace, or simply enjoy the peaceful silence away from the
+                busy city life.
               </p>
               <a
                 href="#"
@@ -79,17 +81,18 @@ function Hotels() {
               <img
                 className="rounded-t-lg w-full h-48 object-cover"
                 src="https://images.unsplash.com/photo-1526772662000-3f88f10405ff?w=600&auto=format&fit=crop&q=60"
-                alt="Coral Sands Resort"
+                alt="Tropical Paradise"
               />
             </a>
             <div className="p-5">
               <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                Coral Sands Resort
+                Tropical Paradise
               </h5>
               <p className="mb-3 text-gray-700">
-                A tropical haven surrounded by turquoise waters, vibrant coral
-                reefs, and luxurious beachfront villas for the ultimate island
-                experience.
+                Step into an exotic island escape with turquoise waters, white
+                sandy beaches, and luxury villas. Swim with dolphins, indulge in
+                spa treatments, and savor fine dining with ocean views in a true
+                paradise.
               </p>
               <a
                 href="#"
@@ -106,16 +109,18 @@ function Hotels() {
               <img
                 className="rounded-t-lg w-full h-48 object-cover"
                 src="https://images.unsplash.com/photo-1709403337027-45324f24fae3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHNhZmFyaSUyMGFkdmVudHVyZXxlbnwwfHwwfHx8MA%3D%3D"
-                alt="Savannah Plains Safari Lodge"
+                alt="Safari Adventure"
               />
             </a>
             <div className="p-5">
               <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                Savannah Plains Safari Lodge
+                Safari Adventure
               </h5>
               <p className="mb-3 text-gray-700">
-                Experience the magic of Africa with guided game drives, luxury
-                tented camps, and panoramic views of the untamed savannah.
+                Experience the thrill of the wild with guided game drives,
+                majestic wildlife sightings, and luxury tented camps under the
+                stars. Perfect for adventurers seeking unforgettable memories in
+                the heart of nature.
               </p>
               <a
                 href="#"
@@ -132,4 +137,4 @@ function Hotels() {
   );
 }
 
-export default Hotels;
+export default Getaways;
