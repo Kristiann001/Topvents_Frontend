@@ -32,13 +32,20 @@ function Login() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // Save user to localStorage
+      // Save user to localStorage (backend returns role as "Admin" or "Customer")
       localStorage.setItem("user", JSON.stringify(data.user));
 
       setMessage("Login successful 🎉");
       console.log("Logged in user:", data);
 
-      setTimeout(() => navigate("/home"), 1500);
+      // Redirect based on role (case-sensitive to match your backend)
+      setTimeout(() => {
+        if (data.user.role === "Admin") {
+          navigate("/events"); // admin → events
+        } else {
+          navigate("/home"); // customer → home
+        }
+      }, 700);
     } catch (err) {
       setError(err.message);
     }
@@ -50,7 +57,7 @@ function Login() {
       <main className="flex-grow">
         <form
           onSubmit={handleSubmit}
-          className="bg-white dark:bg-gray-800 p-10 rounded-lg shadow-lg w-full max-w-sm mx-auto my-22"
+          className="bg-white dark:bg-gray-800 p-10 rounded-lg shadow-lg w-full max-w-sm mx-auto my-20"
         >
           <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
             Login

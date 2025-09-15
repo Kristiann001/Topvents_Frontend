@@ -112,14 +112,15 @@ function Home() {
                 />
               </a>
               <div className="p-5">
-                <a href="#">
-                  <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                    Tech Innovations Summit 2024
-                  </h5>
-                </a>
+                <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
+                  Tech Innovations Summit 2024
+                </h5>
                 <p className="mb-3 text-gray-700">
                   Explore the cutting-edge trends in AI, blockchain, and smart
                   technology with industry leaders and innovators.
+                </p>
+                <p className="text-lg font-semibold text-gray-900 mb-3">
+                  Price: <span className="text-green-600">Ksh 18,000</span>
                 </p>
                 <a
                   href="#"
@@ -140,14 +141,15 @@ function Home() {
                 />
               </a>
               <div className="p-5">
-                <a href="#">
-                  <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                    Business Growth Conference
-                  </h5>
-                </a>
+                <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
+                  Business Growth Conference
+                </h5>
                 <p className="mb-3 text-gray-700">
                   Learn from top entrepreneurs about strategies to scale your
                   business, increase revenue, and maximize efficiency.
+                </p>
+                <p className="text-lg font-semibold text-gray-900 mb-3">
+                  Price: <span className="text-green-600">Ksh 22,500</span>
                 </p>
                 <a
                   href="#"
@@ -168,15 +170,16 @@ function Home() {
                 />
               </a>
               <div className="p-5">
-                <a href="#">
-                  <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                    Startup Insights Forum
-                  </h5>
-                </a>
+                <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
+                  Startup Insights Forum
+                </h5>
                 <p className="mb-3 text-gray-700">
                   Gain valuable knowledge from successful startup founders,
                   investors, and mentors on how to navigate the challenges of
                   launching a business.
+                </p>
+                <p className="text-lg font-semibold text-gray-900 mb-3">
+                  Price: <span className="text-green-600">Ksh 15,000</span>
                 </p>
                 <a
                   href="#"
@@ -197,15 +200,16 @@ function Home() {
                 />
               </a>
               <div className="p-5">
-                <a href="#">
-                  <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                    AI Revolution Summit
-                  </h5>
-                </a>
+                <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
+                  AI Revolution Summit
+                </h5>
                 <p className="mb-3 text-gray-700">
                   Dive deep into the future of AI, machine learning, and
                   automation with experts who are transforming industries
                   worldwide.
+                </p>
+                <p className="text-lg font-semibold text-gray-900 mb-3">
+                  Price: <span className="text-green-600">Ksh 20,000</span>
                 </p>
                 <a
                   href="#"
@@ -217,14 +221,14 @@ function Home() {
             </div>
           </div>
         </section>
+
+        {/* Holiday Cards Section */}
         <section>
           <section className="p-6">
-            {/* Header with View All link */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
               <h2 className="text-3xl font-bold text-left text-gray-900">
                 Escape to an Amazing Destination
               </h2>
-
               <a
                 href="/holidays"
                 className="inline-flex items-center px-3 py-1.5 sm:py-2 text-sm sm:text-base font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-shadow shadow-md"
@@ -233,13 +237,11 @@ function Home() {
               </a>
             </div>
 
-            {/* Description */}
             <p className="text-gray-700 mb-6">
               Explore breathtaking destinations tailored for relaxation,
               adventure, and unforgettable experiences ...
             </p>
 
-            {/* Holiday Booking Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {/* Card 1 */}
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -258,6 +260,9 @@ function Home() {
                     Relax by the ocean, enjoy stunning sunsets, and unwind in a
                     beachfront resort.
                   </p>
+                  <p className="text-lg font-semibold text-gray-900 mb-3">
+                    Price: <span className="text-green-600">Ksh 12,000</span>
+                  </p>
                   <a
                     href="#"
                     className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
@@ -272,7 +277,7 @@ function Home() {
                 <a href="#">
                   <img
                     className="rounded-t-lg w-full h-48 object-cover"
-                    src="https://images.unsplash.com/photo-1588858027324-cdd07d015c29?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bW91bnRhaW4lMjByZXRyZWF0fGVufDB8fDB8fHww"
+                    src="https://images.unsplash.com/photo-1588858027324-cdd07d015c29?w=600&auto=format&fit=crop&q=60"
                     alt="Mountain Retreat"
                   />
                 </a>
@@ -283,6 +288,9 @@ function Home() {
                   <p className="mb-3 text-gray-700">
                     Escape to the mountains, breathe fresh air, and enjoy scenic
                     hiking trails.
+                  </p>
+                  <p className="text-lg font-semibold text-gray-900 mb-3">
+                    Price: <span className="text-green-600">Ksh 10,000</span>
                   </p>
                   <a
                     href="#"
@@ -310,6 +318,9 @@ function Home() {
                     Enjoy white sandy beaches, crystal-clear waters, and
                     luxurious island stays.
                   </p>
+                  <p className="text-lg font-semibold text-gray-900 mb-3">
+                    Price: <span className="text-green-600">Ksh 25,000</span>
+                  </p>
                   <a
                     href="#"
                     className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
@@ -324,7 +335,7 @@ function Home() {
                 <a href="#">
                   <img
                     className="rounded-t-lg w-full h-48 object-cover"
-                    src="https://images.unsplash.com/photo-1709403337027-45324f24fae3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHNhZmFyaSUyMGFkdmVudHVyZXxlbnwwfHwwfHx8MA%3D%3D"
+                    src="https://images.unsplash.com/photo-1709403337027-45324f24fae3?w=600&auto=format&fit=crop&q=60"
                     alt="Safari Adventure"
                   />
                 </a>
@@ -335,6 +346,9 @@ function Home() {
                   <p className="mb-3 text-gray-700">
                     Discover wildlife, explore vast landscapes, and experience
                     thrilling safari tours.
+                  </p>
+                  <p className="text-lg font-semibold text-gray-900 mb-3">
+                    Price: <span className="text-green-600">Ksh 30,000</span>
                   </p>
                   <a
                     href="#"
@@ -347,17 +361,14 @@ function Home() {
             </div>
           </section>
 
+          {/* Destination Hotel Card */}
           <section className="p-6">
-            {/* Beach Destination Card */}
             <div className="flex flex-col md:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden relative h-auto md:h-80">
-              {/* Image */}
               <img
                 className="w-full md:w-1/2 h-60 md:h-full object-cover"
-                src="https://images.unsplash.com/photo-1471922694854-ff1b63b20054?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8YmVhY2h8ZW58MHx8MHx8fDA%3D"
+                src="https://images.unsplash.com/photo-1471922694854-ff1b63b20054?w=600&auto=format&fit=crop&q=60"
                 alt="Sarova WhiteSands Mombasa"
               />
-
-              {/* Content */}
               <div className="w-full md:w-1/2 p-5 flex flex-col justify-center">
                 <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
                   Sarova WhiteSands Mombasa
@@ -368,17 +379,13 @@ function Home() {
                   ocean views, pristine white sandy beaches, and world-class
                   hospitality. Enjoy a tranquil retreat with lush tropical
                   gardens, five-star amenities, and a variety of water sports
-                  activities. Whether you are looking for relaxation by the
-                  poolside, rejuvenating spa treatments, or exquisite dining
-                  experiences, this resort provides the perfect blend of
-                  adventure and serenity for an unforgettable getaway.
+                  activities.
                 </p>
                 <p className="text-lg font-semibold text-gray-900">
-                  Price: $299/night
+                  Price:{" "}
+                  <span className="text-green-600">Ksh 45,000 / night</span>
                 </p>
               </div>
-
-              {/* Ad Badge */}
               <a
                 href="#"
                 className="absolute top-2 right-2 text-gray-500 text-xs md:text-sm"

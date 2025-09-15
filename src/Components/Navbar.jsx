@@ -136,7 +136,7 @@ function Navbar() {
           <ul className="flex flex-col py-2 px-4 space-y-2">
             <li><a href="/home" className="block py-2 px-3 text-black hover:text-green-700">Home</a></li>
             <li><a href="/events" className="block py-2 px-3 text-black hover:text-green-700">Events</a></li>
-            <li><a href="/holidays" className="block py-2 px-3 text-black hover:text-green-700">Getaways</a></li>
+            <li><a href="/getaways" className="block py-2 px-3 text-black hover:text-green-700">Getaways</a></li>
             <li><a href="/stays" className="block py-2 px-3 text-black hover:text-green-700">Stays</a></li>
 
             {user && (
