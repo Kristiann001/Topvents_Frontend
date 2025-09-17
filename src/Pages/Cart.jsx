@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { CartContext } from "../Context/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 
 const Cart = () => {
@@ -10,6 +10,7 @@ const Cart = () => {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [bookingsCount, setBookingsCount] = useState(0);
+  const navigate = useNavigate();
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const token = storedUser?.token;
@@ -33,7 +34,14 @@ const Cart = () => {
     }
   }, [token]);
 
+  // Debug cart state
+  useEffect(() => {
+    console.log("Current cart state:", cart);
+    console.log("Cart in localStorage:", JSON.parse(localStorage.getItem("cart")));
+  }, [cart]);
+
   const parsePrice = (priceStr) => {
+    if (!priceStr) return 0;
     return Number(priceStr.replace("Ksh ", "").replace(",", "")) || 0;
   };
 
@@ -43,9 +51,32 @@ const Cart = () => {
     0
   );
 
+  const validatePhoneNumber = (phone) => {
+    const cleanedPhone = phone.replace(/\s/g, "");
+    return /^0\d{9}$/.test(cleanedPhone) || /^254\d{9}$/.test(cleanedPhone);
+  };
+
   const handlePay = async () => {
-    if (!phone) return toast.error("Enter phone number");
-    if (!token) return toast.error("You must be logged in to pay");
+    if (!token) {
+      toast.error("Please log in to proceed with payment");
+      setTimeout(() => navigate("/login"), 1500);
+      return;
+    }
+
+    if (!phone) {
+      toast.error("Please enter a phone number");
+      return;
+    }
+
+    if (!validatePhoneNumber(phone)) {
+      toast.error("Please enter a valid phone number (e.g., 07xxxxxxxx or 254xxxxxxxx)");
+      return;
+    }
+
+    if (cart.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -61,27 +92,33 @@ const Cart = () => {
         {
           items: orderItems,
           phone,
-          amount: `Ksh ${totalPrice}`,
+          amount: `Ksh ${totalPrice.toLocaleString()}`,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success("Order created. Initiating MPESA payment...");
+      toast.success("Order created successfully. Initiating MPESA payment...");
+
+      // Format phone number for MPESA
+      let formattedPhone = phone.replace(/\s/g, "");
+      if (formattedPhone.startsWith("0")) {
+        formattedPhone = "254" + formattedPhone.slice(1);
+      }
 
       // Initiate STK Push
-      const res = await axios.post(
+      const stkRes = await axios.post(
         "http://localhost:5000/api/mpesa/stkpush",
-        { phone, amount: totalPrice },
+        { phone: formattedPhone, amount: totalPrice },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success(res.data.message || "Payment initiated");
-
-      // Clear cart
+      toast.success(stkRes.data.message || "Check your phone for MPESA prompt");
       clearCart();
+      setPhone("");
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Payment failed");
+      console.error("Payment Error:", err);
+      const errorMessage = err.response?.data?.message || "Failed to process payment. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -90,7 +127,7 @@ const Cart = () => {
   return (
     <div className="max-w-2xl mx-auto my-10 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
       <div className="flex items-center mb-6">
-        <Link to="/" className="text-green-700 hover:text-green-900" aria-label="Back to homepage">
+        <Link to="/home" className="text-green-700 hover:text-green-900" aria-label="Back to homepage">
           <FaArrowLeft className="text-xl sm:text-2xl" />
         </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-center text-green-700 flex-1">
@@ -111,7 +148,7 @@ const Cart = () => {
             >
               <div className="flex-1">
                 <span className="font-medium text-sm sm:text-base">
-                  {cartItem.item.title} ({cartItem.quantity} x {cartItem.item.price})
+                  {cartItem.item.title || "Unknown Item"} ({cartItem.quantity} x {cartItem.item.price || "N/A"})
                 </span>
                 <span className="block text-gray-500 text-xs sm:text-sm">
                   {cartItem.type}
@@ -121,7 +158,7 @@ const Cart = () => {
                 <button
                   onClick={() => updateQuantity(cartItem.item._id, -1)}
                   className="px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm"
-                  aria-label={`Decrease quantity of ${cartItem.item.title}`}
+                  aria-label={`Decrease quantity of ${cartItem.item.title || "item"}`}
                 >
                   -
                 </button>
@@ -129,14 +166,14 @@ const Cart = () => {
                 <button
                   onClick={() => updateQuantity(cartItem.item._id, 1)}
                   className="px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm"
-                  aria-label={`Increase quantity of ${cartItem.item.title}`}
+                  aria-label={`Increase quantity of ${cartItem.item.title || "item"}`}
                 >
                   +
                 </button>
                 <button
                   onClick={() => removeItem(cartItem.item._id)}
                   className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                  aria-label={`Remove ${cartItem.item.title} from cart`}
+                  aria-label={`Remove ${cartItem.item.title || "item"} from cart`}
                 >
                   Remove
                 </button>
@@ -169,7 +206,14 @@ const Cart = () => {
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors duration-200 disabled:opacity-60 text-sm sm:text-base"
           aria-label="Pay with MPESA"
         >
-          {loading ? "Processing..." : "Pay with MPESA"}
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+              Processing...
+            </div>
+          ) : (
+            "Pay with MPESA"
+          )}
         </button>
         {bookingsCount > 0 && (
           <span className="sm:hidden absolute top-1 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">

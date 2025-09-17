@@ -6,25 +6,43 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCart(savedCart);
+    try {
+      const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+      if (Array.isArray(savedCart)) {
+        setCart(savedCart);
+      } else {
+        console.warn("Invalid cart data in localStorage, initializing empty cart");
+        setCart([]);
+      }
+    } catch (err) {
+      console.error("Error loading cart from localStorage:", err);
+      setCart([]);
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    try {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (err) {
+      console.error("Error saving cart to localStorage:", err);
+    }
   }, [cart]);
 
   const addToCart = (item, type) => {
+    if (!item || !item._id || !item.title || !item.price) {
+      console.error("Invalid item data:", item);
+      return;
+    }
     setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem.item._id === item._id);
+      const existingItem = prevCart.find((cartItem) => cartItem.item._id === item._id && cartItem.type === type);
       if (existingItem) {
         return prevCart.map((cartItem) =>
-          cartItem.item._id === item._id
+          cartItem.item._id === item._id && cartItem.type === type
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         );
       }
-      return [...prevCart, { item, quantity: 1, type }];
+      return [...prevCart, { item: { _id: item._id, title: item.title, price: item.price, image: item.image, description: item.description }, quantity: 1, type }];
     });
   };
 
