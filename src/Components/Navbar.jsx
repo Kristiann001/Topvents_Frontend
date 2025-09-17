@@ -1,7 +1,6 @@
-// src/Components/Navbar.jsx
 import { useState, useEffect, useRef, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, LayoutDashboard } from "lucide-react";
 import { CartContext } from "../Context/CartContext";
 
 export default function Navbar() {
@@ -80,12 +79,6 @@ export default function Navbar() {
           <Link to="/stays" className="text-black hover:text-green-700">
             Stays
           </Link>
-          {/* Dashboard link visible only to Admin */}
-          {user?.role === "Admin" && (
-            <Link to="/dashboard" className="text-black hover:text-green-700">
-              Dashboard
-            </Link>
-          )}
         </div>
 
         {/* Right Side */}
@@ -95,11 +88,12 @@ export default function Navbar() {
         >
           {user ? (
             <div className="flex items-center space-x-4 relative">
-              {/* Cart for Customers only */}
+              {/* Cart for Customers, Dashboard for Admins */}
               {user.role === "Customer" && (
                 <button
                   onClick={() => navigate("/cart")}
                   className="relative p-2 rounded-full hover:bg-green-100"
+                  aria-label="Go to cart"
                 >
                   <ShoppingCart className="w-6 h-6 text-green-600" />
                   {cart.length > 0 && (
@@ -107,6 +101,15 @@ export default function Navbar() {
                       {cart.length}
                     </span>
                   )}
+                </button>
+              )}
+              {user.role === "Admin" && (
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="relative p-2 rounded-full hover:bg-green-100"
+                  aria-label="Go to dashboard"
+                >
+                  <LayoutDashboard className="w-6 h-6 text-green-600" />
                 </button>
               )}
 
@@ -195,28 +198,26 @@ export default function Navbar() {
               </li>
             )}
 
-            {user ? (
-              <>
-                {/* Mobile dashboard link for admin */}
-                {user.role === "Admin" && (
-                  <li>
-                    <Link to="/dashboard">
-                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
-                        Dashboard
-                      </button>
-                    </Link>
-                  </li>
-                )}
+            {user && user.role === "Admin" && (
+              <li>
+                <Link
+                  to="/dashboard"
+                  className="flex items-center space-x-2 bg-green-100 text-green-700 font-semibold py-2 px-3 rounded-lg hover:bg-green-200"
+                >
+                  <LayoutDashboard className="w-5 h-5" /> <span>Dashboard</span>
+                </Link>
+              </li>
+            )}
 
-                <li>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
+            {user ? (
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
+                >
+                  Logout
+                </button>
+              </li>
             ) : (
               <>
                 <li>
