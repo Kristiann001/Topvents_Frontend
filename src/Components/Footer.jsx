@@ -21,18 +21,18 @@ function Footer() {
             </li>
             <li>
               <a
-                href="/holidays"
+                href="/getaways"
                 className="hover:text-green-700 hover:underline transition"
               >
-                Holidays
+                Getaways
               </a>
             </li>
             <li>
               <a
-                href="/hotels"
+                href="/stays"
                 className="hover:text-green-700 hover:underline transition"
               >
-                Hotels
+                Stays
               </a>
             </li>
           </ul>

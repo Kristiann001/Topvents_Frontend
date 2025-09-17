@@ -8,6 +8,7 @@ import Stays from "./Pages/Stays";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Cart from "./Pages/Cart";
+import AdminDashboard from "./Pages/AdminDashboard";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/dashboard" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     </>

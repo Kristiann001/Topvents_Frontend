@@ -1,3 +1,4 @@
+// src/Components/Navbar.jsx
 import { useState, useEffect, useRef, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
@@ -82,6 +83,12 @@ export default function Navbar() {
           <Link to="/stays" className="text-black hover:text-green-700">
             Stays
           </Link>
+          {/* Dashboard link visible only to Admin */}
+          {user?.role === "Admin" && (
+            <Link to="/dashboard" className="text-black hover:text-green-700">
+              Dashboard
+            </Link>
+          )}
         </div>
 
         {/* Right Side */}
@@ -192,14 +199,27 @@ export default function Navbar() {
             )}
 
             {user ? (
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
-                >
-                  Logout
-                </button>
-              </li>
+              <>
+                {/* Mobile dashboard link for admin */}
+                {user.role === "Admin" && (
+                  <li>
+                    <Link to="/dashboard">
+                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
+                        Dashboard
+                      </button>
+                    </Link>
+                  </li>
+                )}
+
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
             ) : (
               <>
                 <li>

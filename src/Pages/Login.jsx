@@ -19,9 +19,9 @@ function Login() {
     setMessage("");
 
     try {
+      console.log("Sending login request with:", form);
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: form.email,
@@ -29,25 +29,32 @@ function Login() {
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || "Login failed");
+      const data = await res.json();
+      console.log("Login response:", data);
 
-      // Save user to localStorage (backend returns role as "Admin" or "Customer")
-      localStorage.setItem("user", JSON.stringify(data.user));
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      // Save user and token to localStorage
+      const userData = { ...data.user, token: data.token };
+      localStorage.setItem("user", JSON.stringify(userData));
+      console.log("Stored in localStorage:", JSON.parse(localStorage.getItem("user")));
 
       setMessage("Login successful 🎉");
-      console.log("Logged in user:", data);
 
-      // Redirect based on role (case-sensitive to match your backend)
       setTimeout(() => {
         if (data.user.role === "Admin") {
-          navigate("/events"); // admin → events
+          console.log("Redirecting to /dashboard");
+          navigate("/dashboard");
         } else {
-          navigate("/home"); // customer → home
+          console.log("Redirecting to /home");
+          navigate("/home");
         }
       }, 700);
     } catch (err) {
-      setError(err.message);
+      console.error("Login error:", err.message);
+      setError(err.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -62,16 +69,10 @@ function Login() {
           <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
             Login
           </h2>
-
           {error && <p className="text-red-500 mb-3 text-center">{error}</p>}
           {message && <p className="text-green-600 mb-3 text-center">{message}</p>}
-
-          {/* Email */}
           <div className="mb-5">
-            <label
-              htmlFor="email"
-              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-            >
+            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Your email
             </label>
             <input
@@ -84,13 +85,8 @@ function Login() {
               required
             />
           </div>
-
-          {/* Password */}
           <div className="mb-5">
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-            >
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Your password
             </label>
             <input
@@ -102,21 +98,15 @@ function Login() {
               required
             />
           </div>
-
-          {/* Submit */}
           <button
             type="submit"
             className="w-full text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700"
           >
             Login
           </button>
-
           <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">
             Don’t have an account?{" "}
-            <a
-              href="/register"
-              className="text-green-600 hover:underline dark:text-green-400"
-            >
+            <a href="/register" className="text-green-600 hover:underline dark:text-green-400">
               Sign up
             </a>
           </p>

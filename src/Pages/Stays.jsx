@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import axios from "axios";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import axios from "axios";
 import { toast } from "react-hot-toast";
+import { CartContext } from "../Context/CartContext";
 
 function Stays() {
+  const { addToCart } = useContext(CartContext);
   const storedUser = (() => {
     try {
       return JSON.parse(localStorage.getItem("user"));
@@ -13,29 +15,19 @@ function Stays() {
     }
   })();
 
-  const token = storedUser?.token;
+  const token = storedUser?.token || null;
   const isAdmin = storedUser?.role === "Admin";
 
   const [stays, setStays] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    price: "",
-    image: "",
-  });
 
-  // Fetch stays
   useEffect(() => {
     const fetchStays = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/properties/stays");
+        const res = await axios.get("http://localhost:5000/api/stays");
         setStays(res.data);
       } catch (err) {
-        console.error("Failed to fetch stays:", err);
-        toast.error("Failed to load stays");
+        toast.error("Failed to fetch stays");
       } finally {
         setLoading(false);
       }
@@ -43,207 +35,132 @@ function Stays() {
     fetchStays();
   }, []);
 
-  // Add stay
-  const handleAddSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.title || !form.description || !form.price || !form.image) {
-      toast.error("All fields are required");
+  const handleDelete = (stay) => {
+    if (!isAdmin || !token) {
+      toast.error("You must be logged in as an Admin");
       return;
     }
-
-    try {
-      setAdding(true);
-      const res = await axios.post(
-        "http://localhost:5000/api/properties/stays",
-        form,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setStays((prev) => [...prev, res.data]);
-      toast.success("Stay added successfully");
-      setForm({ title: "", description: "", price: "", image: "" });
-      setShowAddModal(false);
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Failed to add stay");
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  // Delete stay
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/properties/stays/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setStays(stays.filter((s) => s._id !== id));
-      toast.success("Stay deleted successfully");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete stay");
-    }
-  };
-
-  // Customer book
-  const handleBook = (item) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push(item);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    toast.success(`${item.title} added to cart`);
+    const toastId = toast.custom(
+      (t) => (
+        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 max-w-md transition-opacity duration-300">
+          <p className="text-gray-800 mb-4 text-sm sm:text-base">
+            Are you sure you want to delete <strong>{stay.title}</strong>?
+          </p>
+          <div className="flex justify-end space-x-2">
+            <button
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm sm:text-base"
+              onClick={() => toast.dismiss(t.id)}
+              aria-label="Cancel deletion"
+            >
+              No
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base"
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await axios.delete(`http://localhost:5000/api/stays/${stay._id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  setStays(stays.filter((s) => s._id !== stay._id));
+                  toast.success("Stay deleted successfully");
+                } catch (err) {
+                  toast.error(err.response?.data?.message || "Failed to delete stay");
+                }
+              }}
+              aria-label={`Confirm deletion of ${stay.title}`}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity }
+    );
   };
 
   return (
     <>
       <Navbar />
-
-      {/* Hero Section */}
-      <div className="relative bg-stone-700 text-white py-20 px-6 text-center">
-        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">Hotels & Stays</h1>
-        <p className="max-w-2xl mx-auto text-lg opacity-90">
+      <div className="relative bg-stone-700 text-white py-12 sm:py-16 px-4 sm:px-6 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
+          Hotels & Stays
+        </h1>
+        <p className="max-w-xl sm:max-w-2xl mx-auto text-sm sm:text-lg opacity-90">
           Discover comfort and elegance in our curated selection of hotels,
-          offering world-class hospitality, modern amenities, and unforgettable experiences.
+          offering world-class hospitality, modern amenities, and unforgettable
+          experiences.
         </p>
       </div>
 
-      {/* Header + Add Button */}
-      <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-gray-900">Available Stays</h2>
-        {isAdmin && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            + Add Stay
-          </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
+          Available Stays
+        </h2>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
+          </div>
+        ) : stays.length === 0 ? (
+          <p className="text-center text-gray-500 text-sm sm:text-base">
+            No stays available
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 pb-12 sm:pb-16">
+            {stays.map((item, idx) => (
+              <div
+                key={item._id}
+                className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 animate-fadeIn"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <a href="#" aria-label={`View ${item.title} details`}>
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="rounded-t-lg w-full h-40 sm:h-48 object-cover"
+                    loading="lazy"
+                  />
+                </a>
+                <div className="p-4 sm:p-5">
+                  <h5 className="mb-2 text-lg sm:text-xl font-bold tracking-tight text-gray-900">
+                    {item.title}
+                  </h5>
+                  <p className="mb-3 text-gray-700 text-sm sm:text-base line-clamp-3">
+                    {item.description}
+                  </p>
+                  <p className="mb-3 text-base sm:text-lg font-semibold text-gray-900">
+                    Price: <span className="text-green-600">{item.price}</span>
+                  </p>
+                  <div className="flex gap-2">
+                    {!isAdmin && (
+                      <button
+                        onClick={() => {
+                          addToCart(item, "Stay");
+                          toast.success(`${item.title} added to cart`);
+                        }}
+                        className="flex-1 px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                        aria-label={`Book ${item.title}`}
+                      >
+                        Book Now
+                      </button>
+                    )}
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(item)}
+                        className="flex-1 px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                        aria-label={`Delete ${item.title}`}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
-
-      {/* Stays Grid */}
-      {loading ? (
-        <p className="text-center mt-10">Loading stays...</p>
-      ) : (
-        <div className="max-w-7xl mx-auto px-6 pb-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {stays.map((s) => (
-            <div
-              key={s._id}
-              className="relative bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition"
-            >
-              <img
-                src={s.image}
-                alt={s.title}
-                className="rounded-t-lg w-full h-48 object-cover"
-              />
-              <div className="p-5">
-                <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900">
-                  {s.title}
-                </h5>
-                <p className="mb-3 text-gray-700">{s.description}</p>
-                <p className="text-lg font-semibold text-gray-900 mb-3">
-                  Price: <span className="text-green-600">{s.price}</span>
-                </p>
-
-                {!isAdmin && (
-                  <button
-                    onClick={() => handleBook(s)}
-                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
-                  >
-                    Book Now
-                  </button>
-                )}
-
-                {isAdmin && (
-                  <button
-                    onClick={() => handleDelete(s._id)}
-                    className="inline-flex items-center ml-2 px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       <Footer />
-
-      {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowAddModal(false)}
-          ></div>
-          <div className="relative bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
-            <form onSubmit={handleAddSubmit}>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Add New Stay</h2>
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <label className="block mb-2 text-sm font-medium">Title</label>
-              <input
-                name="title"
-                value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className="w-full border p-2 rounded mb-3"
-                required
-              />
-
-              <label className="block mb-2 text-sm font-medium">Description</label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                className="w-full border p-2 rounded mb-3"
-                rows="4"
-                required
-              />
-
-              <label className="block mb-2 text-sm font-medium">Price</label>
-              <input
-                name="price"
-                value={form.price}
-                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                className="w-full border p-2 rounded mb-3"
-                required
-              />
-
-              <label className="block mb-2 text-sm font-medium">Image URL</label>
-              <input
-                name="image"
-                value={form.image}
-                onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
-                className="w-full border p-2 rounded mb-4"
-                required
-              />
-
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={adding}
-                  className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-                >
-                  {adding ? "Adding..." : "Add Stay"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </>
   );
 }

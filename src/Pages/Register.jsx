@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
@@ -9,7 +9,7 @@ function Register() {
     email: "",
     password: "",
     password2: "",
-    role: "Customer", // ✅ default role
+    role: "Customer",
   });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -27,24 +27,24 @@ function Register() {
     try {
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          password2: form.password2,
-          role: form.role, // ✅ include role
-        }),
+        body: JSON.stringify(form),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
 
+      localStorage.setItem("user", JSON.stringify({ ...data.user, token: data.token }));
       setMessage("Registration successful ✅");
       console.log("Registered user:", data);
 
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => {
+        if (data.user.role === "Admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/home");
+        }
+      }, 700);
     } catch (err) {
       setError(err.message);
     }
@@ -65,7 +65,6 @@ function Register() {
           {error && <p className="text-red-500 mb-3 text-center">{error}</p>}
           {message && <p className="text-green-600 mb-3 text-center">{message}</p>}
 
-          {/* NAME */}
           <div className="mb-5">
             <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Your name
@@ -81,7 +80,6 @@ function Register() {
             />
           </div>
 
-          {/* EMAIL */}
           <div className="mb-5">
             <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Your email
@@ -97,7 +95,6 @@ function Register() {
             />
           </div>
 
-          {/* PASSWORD */}
           <div className="mb-5">
             <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Your password
@@ -112,7 +109,6 @@ function Register() {
             />
           </div>
 
-          {/* PASSWORD2 */}
           <div className="mb-5">
             <label htmlFor="password2" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Repeat password
@@ -127,7 +123,6 @@ function Register() {
             />
           </div>
 
-          {/* ROLE DROPDOWN */}
           <div className="mb-5">
             <label htmlFor="role" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Role

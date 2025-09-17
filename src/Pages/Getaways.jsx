@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import axios from "axios";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import axios from "axios";
 import { toast } from "react-hot-toast";
+import { CartContext } from "../Context/CartContext";
 
 function Getaways() {
+  const { addToCart } = useContext(CartContext);
   const storedUser = (() => {
     try {
       return JSON.parse(localStorage.getItem("user"));
@@ -13,31 +15,19 @@ function Getaways() {
     }
   })();
 
-  const token = storedUser?.token;
+  const token = storedUser?.token || null;
   const isAdmin = storedUser?.role === "Admin";
 
   const [getaways, setGetaways] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    price: "",
-    image: "",
-  });
 
-  // Fetch getaways
   useEffect(() => {
     const fetchGetaways = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/properties/getaways"
-        );
+        const res = await axios.get("http://localhost:5000/api/getaways");
         setGetaways(res.data);
       } catch (err) {
-        console.error(err);
-        toast.error("Failed to load getaways");
+        toast.error("Failed to fetch getaways");
       } finally {
         setLoading(false);
       }
@@ -45,209 +35,131 @@ function Getaways() {
     fetchGetaways();
   }, []);
 
-  // Add getaway
-  const handleAddSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.title || !form.description || !form.price || !form.image) {
-      toast.error("All fields are required");
+  const handleDelete = (getaway) => {
+    if (!isAdmin || !token) {
+      toast.error("You must be logged in as an Admin");
       return;
     }
-
-    try {
-      setAdding(true);
-      const res = await axios.post(
-        "http://localhost:5000/api/properties/getaways",
-        form,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setGetaways((prev) => [...prev, res.data]);
-      toast.success("Getaway added successfully");
-      setForm({ title: "", description: "", price: "", image: "" });
-      setShowAddModal(false);
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Failed to add getaway");
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  // Delete getaway
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(
-        `http://localhost:5000/api/properties/getaways/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setGetaways(getaways.filter((g) => g._id !== id));
-      toast.success("Getaway deleted successfully");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete getaway");
-    }
-  };
-
-  // Book getaway (customer)
-  const handleBook = (item) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push(item);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    toast.success(`${item.title} added to cart`);
+    const toastId = toast.custom(
+      (t) => (
+        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 max-w-md transition-opacity duration-300">
+          <p className="text-gray-800 mb-4 text-sm sm:text-base">
+            Are you sure you want to delete <strong>{getaway.title}</strong>?
+          </p>
+          <div className="flex justify-end space-x-2">
+            <button
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm sm:text-base"
+              onClick={() => toast.dismiss(t.id)}
+              aria-label="Cancel deletion"
+            >
+              No
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base"
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await axios.delete(`http://localhost:5000/api/getaways/${getaway._id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  setGetaways(getaways.filter((g) => g._id !== getaway._id));
+                  toast.success("Getaway deleted successfully");
+                } catch (err) {
+                  toast.error(err.response?.data?.message || "Failed to delete getaway");
+                }
+              }}
+              aria-label={`Confirm deletion of ${getaway.title}`}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity }
+    );
   };
 
   return (
     <>
       <Navbar />
-
-      {/* Hero */}
-      <div className="relative bg-teal-600 text-white py-20 px-6 text-center">
-        <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
+      <div className="relative bg-teal-600 text-white py-12 sm:py-16 px-4 sm:px-6 text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
           Holiday Getaways
         </h1>
-        <p className="max-w-2xl mx-auto text-lg opacity-90">
-          Escape the ordinary and experience unforgettable holiday destinations.
+        <p className="max-w-xl sm:max-w-2xl mx-auto text-sm sm:text-lg opacity-90">
+          Escape the ordinary and experience unforgettable holiday destinations,
+          where relaxation meets adventure and cherished memories are made.
         </p>
       </div>
 
-      {/* Header + Add Button */}
-      <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-gray-900">Holidays</h2>
-        {isAdmin && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            + Add Getaway
-          </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
+          Holidays
+        </h2>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
+          </div>
+        ) : getaways.length === 0 ? (
+          <p className="text-center text-gray-500 text-sm sm:text-base">
+            No getaways available
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 pb-12 sm:pb-16">
+            {getaways.map((item, idx) => (
+              <div
+                key={item._id}
+                className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 animate-fadeIn"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <a href="#" aria-label={`View ${item.title} details`}>
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="rounded-t-lg w-full h-40 sm:h-48 object-cover"
+                    loading="lazy"
+                  />
+                </a>
+                <div className="p-4 sm:p-5">
+                  <h5 className="mb-2 text-lg sm:text-xl font-bold tracking-tight text-gray-900">
+                    {item.title}
+                  </h5>
+                  <p className="mb-3 text-gray-700 text-sm sm:text-base line-clamp-3">
+                    {item.description}
+                  </p>
+                  <p className="mb-3 text-base sm:text-lg font-semibold text-gray-900">
+                    Price: <span className="text-green-600">{item.price}</span>
+                  </p>
+                  <div className="flex gap-2">
+                    {!isAdmin && (
+                      <button
+                        onClick={() => {
+                          addToCart(item, "Getaway");
+                          toast.success(`${item.title} added to cart`);
+                        }}
+                        className="flex-1 px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                        aria-label={`Book ${item.title}`}
+                      >
+                        Book Now
+                      </button>
+                    )}
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(item)}
+                        className="flex-1 px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                        aria-label={`Delete ${item.title}`}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
-
-      {/* Cards */}
-      {loading ? (
-        <p className="text-center mt-10">Loading getaways...</p>
-      ) : (
-        <div className="max-w-7xl mx-auto px-6 pb-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {getaways.map((g) => (
-            <div
-              key={g._id}
-              className="relative bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition"
-            >
-              <img
-                className="rounded-t-lg w-full h-48 object-cover"
-                src={g.image}
-                alt={g.title}
-              />
-              <div className="p-5">
-                <h5 className="mb-2 text-xl font-bold text-gray-900">{g.title}</h5>
-                <p className="mb-3 text-gray-700">{g.description}</p>
-                <p className="text-lg font-semibold text-gray-900 mb-3">
-                  Price: <span className="text-green-600">{g.price}</span>
-                </p>
-
-                {!isAdmin && (
-                  <button
-                    onClick={() => handleBook(g)}
-                    className="px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
-                  >
-                    Book Now
-                  </button>
-                )}
-
-                {isAdmin && (
-                  <button
-                    onClick={() => handleDelete(g._id)}
-                    className="px-3 py-2 ml-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       <Footer />
-
-      {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowAddModal(false)}
-          ></div>
-          <div className="relative bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
-            <form onSubmit={handleAddSubmit}>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Add New Getaway</h2>
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <label className="block mb-2 text-sm font-medium">Title</label>
-              <input
-                name="title"
-                value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className="w-full border p-2 rounded mb-3"
-                required
-              />
-
-              <label className="block mb-2 text-sm font-medium">Description</label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, description: e.target.value }))
-                }
-                className="w-full border p-2 rounded mb-3"
-                rows="4"
-                required
-              />
-
-              <label className="block mb-2 text-sm font-medium">Price</label>
-              <input
-                name="price"
-                value={form.price}
-                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                className="w-full border p-2 rounded mb-3"
-                required
-              />
-
-              <label className="block mb-2 text-sm font-medium">Image URL</label>
-              <input
-                name="image"
-                value={form.image}
-                onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
-                className="w-full border p-2 rounded mb-4"
-                required
-              />
-
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={adding}
-                  className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-                >
-                  {adding ? "Adding..." : "Add Getaway"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </>
   );
 }
