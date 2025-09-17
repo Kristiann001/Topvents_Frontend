@@ -1,15 +1,37 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { CartContext } from "../Context/CartContext";
+import { Link } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Cart = () => {
   const { cart, updateQuantity, removeItem, clearCart } = useContext(CartContext);
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [bookingsCount, setBookingsCount] = useState(0);
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const token = storedUser?.token;
+
+  // Fetch bookings count
+  useEffect(() => {
+    if (token) {
+      const fetchBookings = async () => {
+        try {
+          const res = await axios.get("http://localhost:5000/api/orders/my-orders", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const paidOrders = res.data.filter(order => order.status === 'paid');
+          setBookingsCount(paidOrders.length);
+        } catch (err) {
+          console.error("Fetch Bookings Error:", err);
+          toast.error("Failed to fetch bookings");
+        }
+      };
+      fetchBookings();
+    }
+  }, [token]);
 
   const parsePrice = (priceStr) => {
     return Number(priceStr.replace("Ksh ", "").replace(",", "")) || 0;
@@ -67,9 +89,14 @@ const Cart = () => {
 
   return (
     <div className="max-w-2xl mx-auto my-10 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-green-700">
-        Your Cart ({totalItems} {totalItems === 1 ? "item" : "items"})
-      </h1>
+      <div className="flex items-center mb-6">
+        <Link to="/" className="text-green-700 hover:text-green-900" aria-label="Back to homepage">
+          <FaArrowLeft className="text-xl sm:text-2xl" />
+        </Link>
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-green-700 flex-1">
+          Your Cart ({totalItems} {totalItems === 1 ? "item" : "items"})
+        </h1>
+      </div>
 
       {cart.length === 0 ? (
         <p className="text-center text-gray-500 text-sm sm:text-base">
@@ -135,14 +162,21 @@ const Cart = () => {
         aria-label="Phone number for MPESA payment"
       />
 
-      <button
-        onClick={handlePay}
-        disabled={loading || cart.length === 0}
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors duration-200 disabled:opacity-60 text-sm sm:text-base"
-        aria-label="Pay with MPESA"
-      >
-        {loading ? "Processing..." : "Pay with MPESA"}
-      </button>
+      <div className="relative">
+        <button
+          onClick={handlePay}
+          disabled={loading || cart.length === 0}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors duration-200 disabled:opacity-60 text-sm sm:text-base"
+          aria-label="Pay with MPESA"
+        >
+          {loading ? "Processing..." : "Pay with MPESA"}
+        </button>
+        {bookingsCount > 0 && (
+          <span className="sm:hidden absolute top-1 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+            {bookingsCount}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

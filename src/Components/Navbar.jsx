@@ -1,246 +1,183 @@
-// src/Components/Navbar.jsx
-import { useState, useEffect, useRef, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
+import { useState, useContext, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 import { CartContext } from "../Context/CartContext";
+import { Link } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
-export default function Navbar() {
-  const navigate = useNavigate();
-  const { cart } = useContext(CartContext);
+const Cart = () => {
+  const { cart, updateQuantity, removeItem, clearCart } = useContext(CartContext);
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [bookingsCount, setBookingsCount] = useState(0);
 
-  const [user, setUser] = useState(null);
-  const [isOpen, setIsOpen] = useState(false); // mobile menu
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const token = storedUser?.token;
 
-  // Load user from localStorage
+  // Fetch bookings count
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+    if (token) {
+      const fetchBookings = async () => {
+        try {
+          const res = await axios.get("http://localhost:5000/api/orders/bookings", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setBookingsCount(res.data.count);
+        } catch (err) {
+          console.error("Fetch Bookings Error:", err);
+          toast.error("Failed to fetch bookings");
+        }
+      };
+      fetchBookings();
+    }
+  }, [token]);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const parsePrice = (priceStr) => {
+    return Number(priceStr.replace("Ksh ", "").replace(",", "")) || 0;
+  };
 
-  const handleLogout = () => {
-    fetch("http://localhost:5000/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login");
+  const totalItems = cart.reduce((acc, cartItem) => acc + cartItem.quantity, 0);
+  const totalPrice = cart.reduce(
+    (acc, cartItem) => acc + parsePrice(cartItem.item.price) * cartItem.quantity,
+    0
+  );
+
+  const handlePay = async () => {
+    if (!phone) return toast.error("Enter phone number");
+    if (!token) return toast.error("You must be logged in to pay");
+
+    try {
+      setLoading(true);
+      const orderItems = cart.map((cartItem) => ({
+        item: cartItem.item,
+        type: cartItem.type,
+        quantity: cartItem.quantity,
+      }));
+
+      // Create order in DB
+      const createRes = await axios.post(
+        "http://localhost:5000/api/orders",
+        {
+          items: orderItems,
+          phone,
+          amount: `Ksh ${totalPrice}`,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("Order created. Initiating MPESA payment...");
+
+      // Initiate STK Push
+      const res = await axios.post(
+        "http://localhost:5000/api/mpesa/stkpush",
+        { phone, amount: totalPrice },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || "Payment initiated");
+
+      // Clear cart
+      clearCart();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Payment failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <nav className="bg-transparent backdrop-blur-lg border-transparent shadow-md">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        {/* Brand */}
-        <Link to="/" className="text-3xl font-bold text-black">
-          TopVents
+    <div className="max-w-2xl mx-auto my-10 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
+      <div className="flex items-center mb-6">
+        <Link to="/" className="text-green-700 hover:text-green-900" aria-label="Back to homepage">
+          <FaArrowLeft className="text-xl sm:text-2xl" />
         </Link>
-
-        {/* Mobile toggle */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex md:hidden items-center p-2 rounded-lg hover:bg-black/10"
-        >
-          <svg
-            className="w-5 h-5"
-            viewBox="0 0 17 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M1 1h15M1 7h15M1 13h15"
-            />
-          </svg>
-        </button>
-
-        {/* Desktop Links */}
-        <div className="hidden md:flex md:items-center md:space-x-8">
-          <Link to="/" className="text-black hover:text-green-700">
-            Home
-          </Link>
-          <Link to="/events" className="text-black hover:text-green-700">
-            Events
-          </Link>
-          <Link to="/getaways" className="text-black hover:text-green-700">
-            Getaways
-          </Link>
-          <Link to="/stays" className="text-black hover:text-green-700">
-            Stays
-          </Link>
-          {/* Dashboard link visible only to Admin */}
-          {user?.role === "Admin" && (
-            <Link to="/dashboard" className="text-black hover:text-green-700">
-              Dashboard
-            </Link>
-          )}
-        </div>
-
-        {/* Right Side */}
-        <div
-          className="hidden md:flex md:items-center md:space-x-4"
-          ref={dropdownRef}
-        >
-          {user ? (
-            <div className="flex items-center space-x-4 relative">
-              {/* Cart for Customers only */}
-              {user.role === "Customer" && (
-                <button
-                  onClick={() => navigate("/cart")}
-                  className="relative p-2 rounded-full hover:bg-green-100"
-                >
-                  <ShoppingCart className="w-6 h-6 text-green-600" />
-                  {cart.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                      {cart.length}
-                    </span>
-                  )}
-                </button>
-              )}
-
-              {/* Avatar */}
-              <div
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 flex items-center justify-center rounded-full ring-2 ring-gray-300 bg-green-600 text-white font-bold cursor-pointer relative"
-              >
-                {user.name[0].toUpperCase()}
-
-                {/* Dropdown */}
-                {showDropdown && (
-                  <div className="absolute top-0 right-12 mt-2 w-36 bg-white border rounded-lg shadow-lg flex flex-col z-50">
-                    <button
-                      onClick={handleLogout}
-                      className="px-4 py-2 text-sm text-gray-700 hover:text-red-600 text-left w-full"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <>
-              <Link to="/login">
-                <button className="bg-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
-                  Login
-                </button>
-              </Link>
-              <Link to="/register">
-                <button className="border border-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 hover:text-white">
-                  Register
-                </button>
-              </Link>
-            </>
-          )}
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-green-700 flex-1">
+          Your Cart ({totalItems} {totalItems === 1 ? "item" : "items"})
+        </h1>
       </div>
 
-      {/* Mobile Links */}
-      {isOpen && (
-        <div className="md:hidden bg-white/90 backdrop-blur-lg border-t border-gray-200 shadow-md">
-          <ul className="flex flex-col py-2 px-4 space-y-2">
-            <li>
-              <Link
-                to="/"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/events"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Events
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/getaways"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Getaways
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/stays"
-                className="block py-2 px-3 text-black hover:text-green-700"
-              >
-                Stays
-              </Link>
-            </li>
-
-            {user && user.role === "Customer" && (
-              <li>
-                <Link
-                  to="/cart"
-                  className="flex items-center space-x-2 bg-green-100 text-green-700 font-semibold py-2 px-3 rounded-lg hover:bg-green-200"
+      {cart.length === 0 ? (
+        <p className="text-center text-gray-500 text-sm sm:text-base">
+          Your cart is empty.
+        </p>
+      ) : (
+        <ul className="divide-y divide-gray-200 mb-4">
+          {cart.map((cartItem, idx) => (
+            <li
+              key={`${cartItem.item._id}-${idx}`}
+              className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2"
+            >
+              <div className="flex-1">
+                <span className="font-medium text-sm sm:text-base">
+                  {cartItem.item.title} ({cartItem.quantity} x {cartItem.item.price})
+                </span>
+                <span className="block text-gray-500 text-xs sm:text-sm">
+                  {cartItem.type}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => updateQuantity(cartItem.item._id, -1)}
+                  className="px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm"
+                  aria-label={`Decrease quantity of ${cartItem.item.title}`}
                 >
-                  <ShoppingCart className="w-5 h-5" /> <span>Cart</span>
-                </Link>
-              </li>
-            )}
-
-            {user ? (
-              <>
-                {/* Mobile dashboard link for admin */}
-                {user.role === "Admin" && (
-                  <li>
-                    <Link to="/dashboard">
-                      <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
-                        Dashboard
-                      </button>
-                    </Link>
-                  </li>
-                )}
-
-                <li>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 rounded-full hover:from-green-600 hover:to-green-700 transition transform hover:scale-105 shadow-lg"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link to="/login">
-                    <button className="w-full bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition">
-                      Login
-                    </button>
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/register">
-                    <button className="w-full border border-green-500 text-green-700 px-4 py-2 rounded-full hover:bg-green-500 hover:text-white transition">
-                      Register
-                    </button>
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
-        </div>
+                  -
+                </button>
+                <span className="text-sm sm:text-base">{cartItem.quantity}</span>
+                <button
+                  onClick={() => updateQuantity(cartItem.item._id, 1)}
+                  className="px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm"
+                  aria-label={`Increase quantity of ${cartItem.item.title}`}
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => removeItem(cartItem.item._id)}
+                  className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                  aria-label={`Remove ${cartItem.item.title} from cart`}
+                >
+                  Remove
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
-    </nav>
+
+      <div className="flex justify-between items-center mb-4">
+        <span className="font-bold text-base sm:text-lg">Total:</span>
+        <span className="font-bold text-base sm:text-lg text-green-600">
+          Ksh {totalPrice.toLocaleString()}
+        </span>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Enter phone number (e.g., 07xxxxxxxx)"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none mb-4 text-sm sm:text-base"
+        aria-label="Phone number for MPESA payment"
+      />
+
+      <div className="relative">
+        <button
+          onClick={handlePay}
+          disabled={loading || cart.length === 0}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors duration-200 disabled:opacity-60 text-sm sm:text-base"
+          aria-label="Pay with MPESA"
+        >
+          {loading ? "Processing..." : "Pay with MPESA"}
+        </button>
+        {bookingsCount > 0 && (
+          <span className="sm:hidden absolute top-1 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+            {bookingsCount}
+          </span>
+        )}
+      </div>
+    </div>
   );
-}
+};
+
+export default Cart;
