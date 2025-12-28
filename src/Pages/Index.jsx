@@ -20,19 +20,18 @@ function Home() {
   const [getaways, setGetaways] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadingGetaways, setLoadingGetaways] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check user role
-  useEffect(() => {
-    const storedUser = (() => {
-      try {
-        return JSON.parse(localStorage.getItem("user"));
-      } catch {
-        return null;
-      }
-    })();
-    setIsAdmin(storedUser?.role === "Admin");
-  }, []);
+  // Get current user from localStorage
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
+  })();
+
+  const isCustomer = storedUser?.role === "Customer";
+  const isAdmin = storedUser?.role === "Admin";
 
   // Auto-slide every 5s
   useEffect(() => {
@@ -177,7 +176,7 @@ function Home() {
                     <p className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
                       Price: <span className="text-green-600">{event.price}</span>
                     </p>
-                    {!isAdmin && (
+                    {isCustomer && (
                       <button
                         onClick={() => {
                           addToCart(event, "Event");
@@ -203,7 +202,7 @@ function Home() {
               Escape to an Amazing Destination
             </h2>
             <a
-              href="/holidays"
+              href="/getaways"
               className="inline-flex items-center px-3 py-2 text-sm sm:text-base font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-shadow shadow-md"
               aria-label="View all getaways"
             >
@@ -249,7 +248,7 @@ function Home() {
                     <p className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
                       Price: <span className="text-green-600">{getaway.price}</span>
                     </p>
-                    {!isAdmin && (
+                    {isCustomer && (
                       <button
                         onClick={() => {
                           addToCart(getaway, "Getaway");
@@ -311,9 +310,7 @@ function Home() {
           <p className="text-gray-700 mb-4 text-sm sm:text-base">
             Ever wondered why some events feel larger than life while others
             struggle to capture attention? A big part of it comes down to
-            location. Hosting events in major cities comes
-
-System: with unique advantages that make them more thrilling, engaging, and successful.
+            location. Hosting events in major cities comes with unique advantages that make them more thrilling, engaging, and successful.
           </p>
 
           {[

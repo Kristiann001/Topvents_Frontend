@@ -7,6 +7,7 @@ import { CartContext } from "../Context/CartContext";
 
 function Getaways() {
   const { addToCart } = useContext(CartContext);
+
   const storedUser = (() => {
     try {
       return JSON.parse(localStorage.getItem("user"));
@@ -131,7 +132,7 @@ function Getaways() {
                     Price: <span className="text-green-600">{item.price}</span>
                   </p>
                   <div className="flex gap-2">
-                    {!isAdmin && (
+                    {storedUser?.role === "Customer" && (
                       <button
                         onClick={() => {
                           addToCart(item, "Getaway");
@@ -143,7 +144,7 @@ function Getaways() {
                         Book Now
                       </button>
                     )}
-                    {isAdmin && (
+                    {storedUser?.role === "Admin" && (
                       <button
                         onClick={() => handleDelete(item)}
                         className="flex-1 px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
