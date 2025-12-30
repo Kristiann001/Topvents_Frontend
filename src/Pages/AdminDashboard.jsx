@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import { toast } from "react-hot-toast";
 import SearchInput from "../Components/SearchInput";
@@ -18,7 +17,7 @@ import {
 import { confirmDelete } from "../Components/DeleteConfirmation";
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
+
   const firstInputRef = useRef(null);
 
   const [items, setItems] = useState([]);
@@ -151,7 +150,7 @@ export default function AdminDashboard() {
           });
           toast.success("Item deleted successfully!");
           fetchItems();
-        } catch (err) {
+        } catch {
           toast.error("Failed to delete item");
         }
       }
@@ -399,131 +398,142 @@ export default function AdminDashboard() {
             onClick={() => setShowModal(false)}
           ></div>
           
-          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full max-w-lg overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200 border border-white/50">
-            {/* Modal Header */}
-            <div className="px-8 py-6 border-b border-gray-100/50 flex justify-between items-center bg-gradient-to-r from-white/50 to-white/10">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent tracking-tight">
-                {isEditing ? "Edit Item" : "New Item"}
-              </h3>
+          <div className="relative bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full max-w-lg overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200 border border-gray-100 flex flex-col max-h-[90vh]">
+            {/* Modal Header - Fixed */}
+            <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+                  {isEditing ? "Edit Item" : "New Item"}
+                </h3>
+                <p className="text-xs text-gray-500 font-medium mt-0.5">
+                  {isEditing ? "Modify existing entry details" : "Fill in the details for the new entry"}
+                </p>
+              </div>
               <button 
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-white/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 shadow-sm border border-transparent hover:border-gray-100"
+                className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/20"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Item Type</label>
-                <div className="relative">
-                  <select
-                    name="type"
-                    value={form.type}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border-0 bg-white/60 backdrop-blur-md py-3 pl-4 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-green-500 transition-all appearance-none"
-                  >
-                    <option value="Event">Event</option>
-                    <option value="Getaway">Getaway</option>
-                    <option value="Stay">Stay</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                    <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+            {/* Modal Body - Scrollable */}
+            <div className="overflow-y-auto flex-grow custom-scrollbar">
+              <form id="admin-modal-form" onSubmit={handleSubmit} className="p-8 space-y-6">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Item Type</label>
+                  <div className="relative">
+                    <select
+                      name="type"
+                      value={form.type}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border-gray-200 bg-gray-50 py-3 pl-4 pr-10 text-gray-900 shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none"
+                    >
+                      <option value="Event">Event</option>
+                      <option value="Getaway">Getaway</option>
+                      <option value="Stay">Stay</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Title</label>
-                <input
-                  ref={firstInputRef}
-                  name="title"
-                  value={form.title}
-                  onChange={handleChange}
-                  placeholder="e.g., Tech Conference 2024"
-                  className="block w-full rounded-xl border-0 bg-white/60 backdrop-blur-md py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-green-500 transition-all placeholder:text-gray-400"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-5">
                 <div>
-                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Price</label>
-                   <div className="relative rounded-xl shadow-sm">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <span className="text-gray-500 sm:text-sm">Ksh</span>
-                      </div>
-                      <input
-                        name="price"
-                        type="number"
-                        value={form.price}
-                        onChange={handleChange}
-                        placeholder="5,000"
-                        className="block w-full rounded-xl border-0 bg-white/60 backdrop-blur-md py-3 pl-12 pr-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-green-500 transition-all placeholder:text-gray-400"
-                        required
-                        min="0"
-                      />
-                   </div>
-                </div>
-                <div>
-                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Image URL</label>
-                   <input
-                    name="imageUrl"
-                    value={form.imageUrl}
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Title</label>
+                  <input
+                    ref={firstInputRef}
+                    name="title"
+                    value={form.title}
                     onChange={handleChange}
-                    placeholder="https://..."
-                    className="block w-full rounded-xl border-0 bg-white/60 backdrop-blur-md py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-green-500 transition-all placeholder:text-gray-400"
+                    placeholder="e.g., Tech Conference 2024"
+                    className="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all placeholder:text-gray-400"
                     required
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Description</label>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  placeholder="Enter a detailed description..."
-                  rows="3"
-                  className="block w-full rounded-xl border-0 bg-white/60 backdrop-blur-md py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-green-500 transition-all resize-none placeholder:text-gray-400"
-                  required
-                />
-              </div>
-
-              {/* Image Preview */}
-              {form.imageUrl && isValidImageUrl(form.imageUrl) && (
-                <div className="group relative rounded-2xl overflow-hidden h-36 border border-gray-200 bg-gray-50 shadow-inner">
-                  <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Price</label>
+                    <div className="relative rounded-xl shadow-sm">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                          <span className="text-gray-400 sm:text-sm font-medium">Ksh</span>
+                        </div>
+                        <input
+                          name="price"
+                          type="number"
+                          value={form.price}
+                          onChange={handleChange}
+                          placeholder="5000"
+                          className="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 pl-12 pr-4 text-gray-900 shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all placeholder:text-gray-400"
+                          required
+                          min="0"
+                        />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Image URL</label>
+                    <input
+                      name="imageUrl"
+                      value={form.imageUrl}
+                      onChange={handleChange}
+                      placeholder="https://..."
+                      className="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all placeholder:text-gray-400"
+                      required
+                    />
+                  </div>
                 </div>
-              )}
 
-              {/* Modal Footer */}
-              <div className="flex justify-end gap-3 pt-6 border-t border-gray-100/50">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm transform active:scale-95"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-xl hover:from-green-500 hover:to-teal-500 focus:ring-4 focus:ring-green-200 transition-all shadow-lg shadow-green-500/30 transform hover:-translate-y-0.5 active:scale-95 flex items-center"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
-                      Saving...
-                    </>
-                  ) : isEditing ? "Update Item" : "Create Item"}
-                </button>
-              </div>
-            </form>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Description</label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    placeholder="Enter a detailed description..."
+                    rows="4"
+                    className="block w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4 text-gray-900 shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none placeholder:text-gray-400"
+                    required
+                  />
+                </div>
+
+                {/* Image Preview */}
+                {form.imageUrl && isValidImageUrl(form.imageUrl) && (
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Preview</label>
+                    <div className="group relative rounded-2xl overflow-hidden h-48 border border-gray-200 bg-gray-50 shadow-inner">
+                      <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                  </div>
+                )}
+              </form>
+            </div>
+
+            {/* Modal Footer - Fixed */}
+            <div className="px-8 py-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-6 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="admin-modal-form"
+                className="px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-xl hover:from-green-500 hover:to-teal-500 focus:ring-4 focus:ring-green-200 transition-all shadow-lg shadow-green-500/20 transform hover:-translate-y-0.5 active:scale-95 flex items-center min-w-[140px] justify-center"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : isEditing ? "Update Item" : "Create Item"}
+              </button>
+            </div>
           </div>
         </div>
       )}
