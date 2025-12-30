@@ -59,61 +59,96 @@ function Login() {
   };
 
   return (
-    <>
-      <Navbar />
-      <main className="flex-grow">
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white dark:bg-gray-800 p-10 rounded-lg shadow-lg w-full max-w-sm mx-auto my-20"
-        >
-          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">
-            Login
-          </h2>
-          {error && <p className="text-red-500 mb-3 text-center">{error}</p>}
-          {message && <p className="text-green-600 mb-3 text-center">{message}</p>}
-          <div className="mb-5">
-            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Your email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={form.email}
-              onChange={handleChange}
-              className="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="name@example.com"
-              required
-            />
-          </div>
-          <div className="mb-5">
-            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Your password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={form.password}
-              onChange={handleChange}
-              className="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700"
+    <div className="min-h-screen flex flex-col relative">
+      {/* Fixed Background Layers */}
+      <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center z-0"></div>
+      <div className="fixed inset-0 bg-white/30 backdrop-blur-md z-0"></div>
+
+      {/* Content */}
+      <div className="relative z-10 w-full">
+        <Navbar />
+      </div>
+      
+      <main className="flex-grow flex items-center justify-center relative z-10 px-4 py-12 sm:py-20">
+        <div className="relative w-full max-w-md">
+          {/* Subtle glow effect behind card */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl blur opacity-30 animate-pulse"></div>
+          
+          <form
+            onSubmit={handleSubmit}
+            className="relative bg-white/80 backdrop-blur-xl p-8 sm:p-10 rounded-2xl shadow-2xl border border-white/50 w-full"
           >
-            Login
-          </button>
-          <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">
-            Don’t have an account?{" "}
-            <a href="/register" className="text-green-600 hover:underline dark:text-green-400">
-              Sign up
-            </a>
-          </p>
-        </form>
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                Welcome Back
+              </h2>
+              <p className="text-gray-500 mt-2 text-sm">Sign in to continue your journey</p>
+            </div>
+
+            {error && (
+              <div className="mb-6 p-4 rounded-xl bg-red-50/80 border border-red-100 text-red-600 text-sm font-medium animate-in fade-in slide-in-from-top-2">
+                {error}
+              </div>
+            )}
+            {message && (
+              <div className="mb-6 p-4 rounded-xl bg-green-50/80 border border-green-100 text-green-600 text-sm font-medium animate-in fade-in slide-in-from-top-2">
+                {message}
+              </div>
+            )}
+
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="email" className="block mb-2 text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="block w-full rounded-xl border-0 bg-white/50 backdrop-blur-sm py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-green-500 transition-all placeholder:text-gray-400"
+                  placeholder="name@example.com"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="password" className="block mb-2 text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  className="block w-full rounded-xl border-0 bg-white/50 backdrop-blur-sm py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-green-500 transition-all placeholder:text-gray-400"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="mt-8 w-full text-white bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 font-bold rounded-xl text-sm px-5 py-3.5 transition-all shadow-lg shadow-green-500/30 transform hover:-translate-y-0.5 active:scale-95"
+            >
+              Sign In
+            </button>
+
+            <p className="mt-6 text-center text-sm text-gray-500">
+              Don’t have an account?{" "}
+              <a href="/register" className="font-semibold text-green-600 hover:text-green-500 transition-colors">
+                Create one now
+              </a>
+            </p>
+          </form>
+        </div>
       </main>
-      <Footer />
-    </>
+      
+      <div className="relative z-10 w-full">
+         <Footer />
+      </div>
+    </div>
   );
 }
 

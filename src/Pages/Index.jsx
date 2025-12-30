@@ -68,7 +68,7 @@ function Home() {
       <Navbar />
       
         {/* Carousel Section */}
-        <section className="relative w-full bg-gray-900">
+        <section className="relative w-full bg-gray-900 mt-16">
           <div className="relative w-full h-[500px] overflow-hidden">
             {/* Overlay */}
             <div className="absolute inset-0 bg-black/40 z-10 transition-opacity duration-500"></div>

@@ -125,101 +125,150 @@ const Cart = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto my-10 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
-      <div className="flex items-center mb-6">
-        <Link to="/home" className="text-green-700 hover:text-green-900" aria-label="Back to homepage">
-          <FaArrowLeft className="text-xl sm:text-2xl" />
-        </Link>
-        <h1 className="text-2xl sm:text-3xl font-bold text-center text-green-700 flex-1">
-          Your Cart ({totalItems} {totalItems === 1 ? "item" : "items"})
-        </h1>
-      </div>
-
-      {cart.length === 0 ? (
-        <p className="text-center text-gray-500 text-sm sm:text-base">
-          Your cart is empty.
-        </p>
-      ) : (
-        <ul className="divide-y divide-gray-200 mb-4">
-          {cart.map((cartItem, idx) => (
-            <li
-              key={`${cartItem.item._id}-${idx}`}
-              className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2"
-            >
-              <div className="flex-1">
-                <span className="font-medium text-sm sm:text-base">
-                  {cartItem.item.title || "Unknown Item"} ({cartItem.quantity} x {cartItem.item.price || "N/A"})
-                </span>
-                <span className="block text-gray-500 text-xs sm:text-sm">
-                  {cartItem.type}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => updateQuantity(cartItem.item._id, -1)}
-                  className="px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm"
-                  aria-label={`Decrease quantity of ${cartItem.item.title || "item"}`}
-                >
-                  -
-                </button>
-                <span className="text-sm sm:text-base">{cartItem.quantity}</span>
-                <button
-                  onClick={() => updateQuantity(cartItem.item._id, 1)}
-                  className="px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm"
-                  aria-label={`Increase quantity of ${cartItem.item.title || "item"}`}
-                >
-                  +
-                </button>
-                <button
-                  onClick={() => removeItem(cartItem.item._id)}
-                  className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                  aria-label={`Remove ${cartItem.item.title || "item"} from cart`}
-                >
-                  Remove
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="flex justify-between items-center mb-4">
-        <span className="font-bold text-base sm:text-lg">Total:</span>
-        <span className="font-bold text-base sm:text-lg text-green-600">
-          Ksh {totalPrice.toLocaleString()}
-        </span>
-      </div>
-
-      <input
-        type="text"
-        placeholder="Enter phone number (e.g., 07xxxxxxxx)"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none mb-4 text-sm sm:text-base"
-        aria-label="Phone number for MPESA payment"
-      />
-
-      <div className="relative">
-        <button
-          onClick={handlePay}
-          disabled={loading || cart.length === 0}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors duration-200 disabled:opacity-60 text-sm sm:text-base"
-          aria-label="Pay with MPESA"
-        >
-          {loading ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-              Processing...
+    <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
+      <div className="max-w-4xl mx-auto w-full px-4 py-8 sm:py-12 flex-grow">
+        
+        {/* Header */}
+        <div className="flex items-center mb-8">
+          <Link to="/home" className="group flex items-center text-gray-500 hover:text-green-600 transition-colors">
+            <div className="p-2 rounded-full bg-white shadow-sm border border-gray-100 group-hover:border-green-200 transition-colors mr-3">
+               <FaArrowLeft className="w-4 h-4" />
             </div>
-          ) : (
-            "Pay with MPESA"
-          )}
-        </button>
-        {bookingsCount > 0 && (
-          <span className="sm:hidden absolute top-1 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-            {bookingsCount}
-          </span>
-        )}
+            <span className="font-medium text-sm">Continue Shopping</span>
+          </Link>
+          <div className="flex-1 text-center pr-12">
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Shopping Cart</h1>
+            <p className="text-gray-500 text-sm mt-1">{totalItems} {totalItems === 1 ? "item" : "items"}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Cart Items List */}
+          <div className="lg:col-span-2 space-y-4">
+            {cart.length === 0 ? (
+               <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-50 mb-4">
+                    <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">Your cart is empty</h3>
+                  <p className="text-gray-500 text-sm mt-1">Looks like you haven't added anything yet.</p>
+                  <Link to="/home" className="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors shadow-lg shadow-green-200">
+                    Start Exploring
+                  </Link>
+               </div>
+            ) : (
+              <ul className="space-y-4">
+                {cart.map((cartItem, idx) => (
+                  <li
+                    key={`${cartItem.item._id}-${idx}`}
+                    className="group relative bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row gap-5 items-center"
+                  >
+                    <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100">
+                       <img 
+                          src={cartItem.item.image || "https://via.placeholder.com/150"} 
+                          alt={cartItem.item.title} 
+                          className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        />
+                    </div>
+                    
+                    <div className="flex-1 text-center sm:text-left w-full sm:w-auto">
+                      <h3 className="font-bold text-gray-900 text-lg">{cartItem.item.title || "Unknown Item"}</h3>
+                      <p className="text-gray-500 text-sm mt-0.5">{cartItem.type}</p>
+                      <p className="text-green-600 font-bold text-sm mt-2">{cartItem.item.price || "N/A"}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between w-full sm:w-auto gap-4 mt-2 sm:mt-0">
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-3 bg-gray-50 p-1.5 rounded-xl border border-gray-200/50">
+                          <button
+                            onClick={() => updateQuantity(cartItem.item._id, -1)}
+                            className="w-8 h-8 flex items-center justify-center bg-white text-gray-600 rounded-lg shadow-sm hover:text-green-600 transition-colors"
+                            aria-label="Decrease quantity"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center font-semibold text-gray-900">{cartItem.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(cartItem.item._id, 1)}
+                            className="w-8 h-8 flex items-center justify-center bg-white text-gray-600 rounded-lg shadow-sm hover:text-green-600 transition-colors"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+                        
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => removeItem(cartItem.item._id)}
+                          className="flex items-center justify-center w-10 h-10 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all sm:ml-4"
+                          aria-label="Remove item"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 sm:p-8 sticky top-24">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+              
+              <div className="space-y-4 mb-6">
+                 <div className="flex justify-between text-gray-500 text-sm">
+                   <span>Subtotal ({totalItems} items)</span>
+                   <span className="font-medium text-gray-900">Ksh {totalPrice.toLocaleString()}</span>
+                 </div>
+
+                 <div className="border-t border-gray-100 pt-4 flex justify-between">
+                   <span className="text-base font-bold text-gray-900">Order Total</span>
+                   <span className="text-xl font-extrabold text-green-600">Ksh {totalPrice.toLocaleString()}</span>
+                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">Phone Number</label>
+                   <input
+                    type="text"
+                    placeholder="07xxxxxxxx"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="block w-full rounded-xl border-gray-200 bg-gray-50 focus:bg-white py-3 px-4 text-gray-900 shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all placeholder:text-gray-400"
+                  />
+                </div>
+                
+                <button
+                  onClick={handlePay}
+                  disabled={loading || cart.length === 0}
+                  className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-500/30 transform hover:-translate-y-0.5 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    "Pay with M-PESA"
+                  )}
+                </button>
+                
+                <p className="text-center text-xs text-gray-400 mt-4">
+                   Secure payment processed via M-PESA.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
