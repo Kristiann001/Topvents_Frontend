@@ -9,30 +9,13 @@ const Cart = () => {
   const { cart, updateQuantity, removeItem, clearCart } = useContext(CartContext);
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [bookingsCount, setBookingsCount] = useState(0);
+
   const navigate = useNavigate();
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const token = storedUser?.token;
 
-  // Fetch bookings count
-  useEffect(() => {
-    if (token) {
-      const fetchBookings = async () => {
-        try {
-          const res = await axios.get("http://localhost:5000/api/orders/my-orders", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const paidOrders = res.data.filter(order => order.status === 'paid');
-          setBookingsCount(paidOrders.length);
-        } catch (err) {
-          console.error("Fetch Bookings Error:", err);
-          toast.error("Failed to fetch bookings");
-        }
-      };
-      fetchBookings();
-    }
-  }, [token]);
+
 
   // Debug cart state
   useEffect(() => {
@@ -87,7 +70,7 @@ const Cart = () => {
       }));
 
       // Create order in DB
-      const createRes = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/orders",
         {
           items: orderItems,

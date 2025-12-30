@@ -32,7 +32,7 @@ function Home() {
   })();
 
   const isCustomer = storedUser?.role === "Customer";
-  const isAdmin = storedUser?.role === "Admin";
+
 
   // Auto-slide every 5s
   useEffect(() => {

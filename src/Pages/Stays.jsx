@@ -42,7 +42,7 @@ function Stays() {
         const query = debouncedSearch ? `?search=${debouncedSearch}` : "";
         const res = await axios.get(`http://localhost:5000/api/stays${query}`);
         setStays(res.data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to fetch stays");
       } finally {
         setLoading(false);
