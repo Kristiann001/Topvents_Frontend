@@ -1,58 +1,88 @@
 function Footer() {
   return (
-    <footer className="bg-transparent backdrop-blur-lg border-t border-gray-300 shadow-md mt-12">
-      <div className="max-w-screen-xl mx-auto px-6 py-8 md:py-12">
-        {/* Top Section */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          {/* Brand */}
-          <span className="text-2xl md:text-3xl font-bold text-black text-center md:text-left">
-            TopVents
-          </span>
+    <footer className="bg-white border-t border-gray-100 pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-12">
+          {/* Brand & Desc */}
+          <div className="col-span-1 md:col-span-2">
+            <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-500 bg-clip-text text-transparent mb-4 block">
+              TopVents
+            </span>
+            <p className="text-gray-500 text-sm max-w-sm leading-relaxed">
+              Your one-stop destination for discovering and booking the best
+              events, getaways, and stays. Experience the world with premium
+              comfort and ease.
+            </p>
+          </div>
 
-          {/* Links */}
-          <ul className="flex flex-col items-center space-y-3 md:space-y-0 md:flex-row md:space-x-8 text-sm font-medium text-black">
-            <li>
-              <a
-                href="/events"
-                className="hover:text-green-700 hover:underline transition"
-              >
-                Events
-              </a>
-            </li>
-            <li>
-              <a
-                href="/getaways"
-                className="hover:text-green-700 hover:underline transition"
-              >
-                Getaways
-              </a>
-            </li>
-            <li>
-              <a
-                href="/stays"
-                className="hover:text-green-700 hover:underline transition"
-              >
-                Stays
-              </a>
-            </li>
-          </ul>
+          {/* Quick Links */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4 tracking-wide uppercase text-sm">
+              Discover
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-600">
+              <li>
+                <a
+                  href="/events"
+                  className="hover:text-green-600 transition-colors duration-200"
+                >
+                  Events
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/getaways"
+                  className="hover:text-green-600 transition-colors duration-200"
+                >
+                  Getaways
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/stays"
+                  className="hover:text-green-600 transition-colors duration-200"
+                >
+                  Stays
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact / Social or Other */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4 tracking-wide uppercase text-sm">
+              Legal
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-600">
+              <li>
+                <a
+                  href="/privacy"
+                  className="hover:text-green-600 transition-colors duration-200"
+                >
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/terms"
+                  className="hover:text-green-600 transition-colors duration-200"
+                >
+                  Terms of Service
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Divider */}
-        <hr className="my-6 md:my-8 border-gray-300 shadow-sm" />
-
-        {/* Bottom Note */}
-        <div className="text-center">
-          <span className="block text-xs md:text-sm text-black">
-            © {new Date().getFullYear()}{" "}
-            <a
-              href="/"
-              className="hover:underline text-black font-semibold"
-            >
-              TopVents™
-            </a>
-            . All Rights Reserved.
-          </span>
+        <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-gray-400">
+            © {new Date().getFullYear()} TopVents. All Rights Reserved.
+          </p>
+          {/* Social Icons Placeholder */}
+          <div className="flex space-x-4">
+            {/* Icons can go here */}
+          </div>
         </div>
       </div>
     </footer>

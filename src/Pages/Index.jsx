@@ -24,7 +24,8 @@ function Home() {
   // Get current user from localStorage
   const storedUser = (() => {
     try {
-      return JSON.parse(localStorage.getItem("user"));
+      const user = localStorage.getItem("user");
+      return user ? JSON.parse(user) : null;
     } catch {
       return null;
     }
@@ -63,62 +64,64 @@ function Home() {
   }, []);
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <div id="main-content" className="bg-gray-50">
+      
         {/* Carousel Section */}
-        <section className="relative w-full bg-gray-700">
-          <div className="relative w-full">
-            {/* Carousel wrapper */}
-            <div className="relative h-64 sm:h-96 md:h-[500px] overflow-hidden bg-gray-900">
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/50 z-10"></div>
+        <section className="relative w-full bg-gray-900">
+          <div className="relative w-full h-[500px] overflow-hidden">
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/40 z-10 transition-opacity duration-500"></div>
 
-              {/* Slides */}
-              {images.map((src, index) => (
-                <div
-                  key={index}
-                  className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                    index === activeIndex ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  <img
-                    src={src}
-                    className="w-full h-full object-cover"
-                    alt={`Event Image ${index + 1}`}
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
+            {/* Slides */}
+            {images.map((src, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  index === activeIndex ? "opacity-100 scale-105" : "opacity-0 scale-100"
+                }`}
+              >
+                <img
+                  src={src}
+                  className="w-full h-full object-cover"
+                  alt={`Event Image ${index + 1}`}
+                  loading="lazy"
+                />
+              </div>
+            ))}
 
             {/* Jumbotron Text */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 px-4 sm:px-6">
-              <h1 className="mb-4 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white">
-                Join Us for Unforgettable Events
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 px-6 max-w-4xl mx-auto">
+              <h1 className="mb-6 text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white drop-shadow-lg">
+                <span className="bg-gradient-to-r from-green-300 to-teal-200 bg-clip-text text-transparent">
+                  Unforgettable Moments
+                </span>
+                <br /> Start Here
               </h1>
-              <p className="mb-6 text-sm sm:text-lg md:text-xl text-gray-200 sm:px-8 md:px-16 lg:px-48">
+              <p className="mb-8 text-lg sm:text-xl text-gray-100 leading-relaxed max-w-2xl drop-shadow-md">
                 Experience unique gatherings, meet like-minded people, and make
                 memories that last a lifetime.
               </p>
               <a
                 href="/events"
-                className="inline-flex justify-center items-center py-2 sm:py-3 px-4 sm:px-5 text-sm sm:text-base font-medium text-white rounded-lg bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 transition-colors"
+                className="inline-flex justify-center items-center py-3 px-8 text-base font-semibold text-white bg-green-600 rounded-full hover:bg-green-700 transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-green-500/30"
                 aria-label="Explore events"
               >
-                Explore More
+                Explore Events
               </a>
             </div>
 
             {/* Indicators */}
-            <div className="absolute bottom-3 sm:bottom-5 left-1/2 z-30 flex -translate-x-1/2 space-x-2">
+            <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 space-x-3">
               {images.map((_, index) => (
                 <button
                   key={index}
                   type="button"
                   onClick={() => setActiveIndex(index)}
-                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${
-                    index === activeIndex ? "bg-white" : "bg-white/50 hover:bg-white/75"
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === activeIndex 
+                      ? "bg-white w-8" 
+                      : "bg-white/50 hover:bg-white/80"
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 ></button>
@@ -127,229 +130,271 @@ function Home() {
           </div>
         </section>
 
-        {/* Upcoming Events Section */}
-        <section className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2 sm:gap-4">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Upcoming Events
-            </h2>
-            <a
-              href="/events"
-              className="inline-flex items-center px-3 py-2 text-sm sm:text-base font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-shadow shadow-md"
-              aria-label="View all events"
-            >
-              View All <span className="ml-1">&rarr;</span>
-            </a>
-          </div>
-
-          {loadingEvents ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 space-y-20">
+          
+          {/* Upcoming Events Section */}
+          <section>
+            <div className="flex flex-col sm:flex-row justify-between items-end mb-8 gap-4 border-b border-gray-200 pb-4">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">
+                  Upcoming Events
+                </h2>
+                <p className="text-gray-500 mt-2">Curated experiences just for you</p>
+              </div>
+              <a
+                href="/events"
+                className="text-green-600 font-semibold hover:text-green-700 hover:underline flex items-center group"
+                aria-label="View all events"
+              >
+                View All <span className="ml-1 transition-transform group-hover:translate-x-1">&rarr;</span>
+              </a>
             </div>
-          ) : events.length === 0 ? (
-            <p className="text-center text-gray-500 text-sm sm:text-base">
-              No events available
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {events.map((event, idx) => (
-                <div
-                  key={event._id}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 animate-fadeIn"
-                  style={{ animationDelay: `${idx * 100}ms` }}
-                >
-                  <a href="#" aria-label={`View ${event.title} details`}>
-                    <img
-                      className="rounded-t-lg w-full h-40 sm:h-48 object-cover"
-                      src={event.image}
-                      alt={event.title}
-                      loading="lazy"
-                    />
-                  </a>
-                  <div className="p-4 sm:p-5">
-                    <h5 className="mb-2 text-lg sm:text-xl font-bold tracking-tight text-gray-900">
-                      {event.title}
-                    </h5>
-                    <p className="mb-3 text-gray-700 text-sm sm:text-base line-clamp-3">
-                      {event.description}
-                    </p>
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
-                      Price: <span className="text-green-600">{event.price}</span>
-                    </p>
-                    {isCustomer && (
-                      <button
-                        onClick={() => {
-                          addToCart(event, "Event");
-                          toast.success(`${event.title} added to cart`);
-                        }}
-                        className="inline-flex items-center px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                        aria-label={`Book ${event.title}`}
-                      >
-                        Book Now
-                      </button>
-                    )}
+
+            {loadingEvents ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+              </div>
+            ) : events.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-gray-500">No events scheduled at the moment.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+                {events.map((event, idx) => (
+                  <div
+                    key={event._id}
+                    className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col h-full group"
+                    style={{ animationDelay: `${idx * 100}ms` }}
+                  >
+                    <div className="relative aspect-video overflow-hidden">
+                      <img
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        src={event.image}
+                        alt={event.title}
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-green-700 shadow-sm">
+                        {event.price}
+                      </div>
+                    </div>
+                    
+                    <div className="p-5 flex flex-col flex-grow">
+                      <h5 className="mb-2 text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-green-600 transition-colors">
+                        {event.title}
+                      </h5>
+                      <p className="mb-4 text-gray-600 text-sm line-clamp-2 flex-grow">
+                        {event.description}
+                      </p>
+                      
+                      <div className="mt-auto pt-4 border-t border-gray-50">
+                        {isCustomer ? (
+                          <button
+                            onClick={() => {
+                              addToCart(event, "Event");
+                              toast.success(`${event.title} added to cart`);
+                            }}
+                            className="w-full py-2.5 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 active:scale-95 transition-all shadow-md hover:shadow-green-200"
+                            aria-label={`Book ${event.title}`}
+                          >
+                            Book Now
+                          </button>
+                        ) : (
+                           <a href="/events" className="block text-center w-full py-2.5 text-sm font-medium text-green-600 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
+                            View Details
+                           </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Holiday Cards Section */}
+          <section>
+            <div className="flex flex-col sm:flex-row justify-between items-end mb-8 gap-4 border-b border-gray-200 pb-4">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">
+                  Featured Getaways
+                </h2>
+                 <p className="text-gray-500 mt-2">Explore breathtaking destinations</p>
+              </div>
+              <a
+                href="/getaways"
+                className="text-teal-600 font-semibold hover:text-teal-700 hover:underline flex items-center group"
+                aria-label="View all getaways"
+              >
+                View All <span className="ml-1 transition-transform group-hover:translate-x-1">&rarr;</span>
+              </a>
+            </div>
+
+            {loadingGetaways ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>
+              </div>
+            ) : getaways.length === 0 ? (
+               <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-gray-500">No getaways available at the moment.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+                {getaways.map((getaway, idx) => (
+                  <div
+                    key={getaway._id}
+                    className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col h-full group"
+                    style={{ animationDelay: `${idx * 100}ms` }}
+                  >
+                    <div className="relative aspect-video overflow-hidden">
+                      <img
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        src={getaway.image}
+                        alt={getaway.title}
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-teal-700 shadow-sm">
+                        {getaway.price}
+                      </div>
+                    </div>
+                    
+                    <div className="p-5 flex flex-col flex-grow">
+                      <h5 className="mb-2 text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-teal-600 transition-colors">
+                        {getaway.title}
+                      </h5>
+                      <p className="mb-4 text-gray-600 text-sm line-clamp-2 flex-grow">
+                        {getaway.description}
+                      </p>
+                      
+                      <div className="mt-auto pt-4 border-t border-gray-50">
+                        {isCustomer ? (
+                          <button
+                            onClick={() => {
+                              addToCart(getaway, "Getaway");
+                              toast.success(`${getaway.title} added to cart`);
+                            }}
+                            className="w-full py-2.5 text-sm font-medium text-white bg-teal-600 rounded-xl hover:bg-teal-700 active:scale-95 transition-all shadow-md hover:shadow-teal-200"
+                            aria-label={`Book ${getaway.title}`}
+                          >
+                            Book Now
+                          </button>
+                        ) : (
+                          <a href="/getaways" className="block text-center w-full py-2.5 text-sm font-medium text-teal-600 bg-teal-50 rounded-xl hover:bg-teal-100 transition-colors">
+                            View Details
+                           </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Destination Hotel Card */}
+          <section>
+             <div className="flex flex-col md:flex-row bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden relative min-h-[400px] md:h-auto group">
+              <div className="w-full md:w-1/2 relative overflow-hidden">
+                <img
+                  className="w-full h-64 md:h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  src="https://images.unsplash.com/photo-1471922694854-ff1b63b20054?w=600&auto=format&fit=crop&q=60"
+                  alt="Sarova WhiteSands Mombasa"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
+              </div>
+              
+              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-br from-white to-gray-50">
+                <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide w-fit mb-4">
+                  Featured Stay
+                </span>
+                <h5 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 leading-tight">
+                  Sarova WhiteSands Mombasa
+                </h5>
+                <p className="mb-6 text-gray-600 text-base leading-relaxed line-clamp-4">
+                  Nestled along the picturesque coastline of Mombasa, Sarova
+                  WhiteSands is a luxurious beachfront resort offering stunning
+                  ocean views, pristine white sandy beaches, and world-class
+                  hospitality. Enjoy a tranquil retreat with lush tropical
+                  gardens, five-star amenities, and a variety of water sports
+                  activities.
+                </p>
+                <div className="flex items-center justify-between mt-auto">
+                  <p className="text-xl font-bold text-gray-900">
+                    <span className="text-sm text-gray-500 font-normal">Starting from</span> <br/>
+                    <span className="text-green-600">Ksh 45,000</span> <span className="text-sm text-gray-500 font-normal">/ night</span>
+                  </p>
+                  <a href="/stays" className="px-6 py-3 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-colors shadow-lg hover:shadow-xl">
+                    Explore Stays
+                  </a>
+                </div>
+              </div>
+              <span className="absolute top-4 left-4 md:left-auto md:right-4 bg-black/30 backdrop-blur-md text-white/80 px-2 py-1 rounded text-xs">
+                Ad
+              </span>
+            </div>
+          </section>
+
+          {/* Why Major Cities Section */}
+          <section className="bg-gradient-to-b from-gray-50 to-white rounded-3xl p-8 sm:p-12 border border-gray-100">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                Why Major Cities Make Event Hosting More Exciting!
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Hosting events in major cities comes with unique advantages that make them more thrilling, engaging, and successful.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Unmatched Infrastructure",
+                  text: "World-class convention centers, top-notch hotels, and easy transportation provide a seamless experience.",
+                  icon: "🏙️"
+                },
+                {
+                  title: "Vibrant Entertainment",
+                  text: "Exciting nightlife, live performances, and fine dining make the trip even more worthwhile.",
+                  icon: "🎭"
+                },
+                {
+                  title: "High Exposure",
+                  text: "A built-in audience of locals, tourists, and business travelers maximizes visibility.",
+                  icon: "👥"
+                },
+                {
+                  title: "Media Coverage",
+                  text: "Journalists and influencers are more likely to cover your event in big cities.",
+                  icon: "📸"
+                },
+                {
+                  title: "Networking",
+                  text: "Attract industry leaders and make valuable connections in thriving business hubs.",
+                  icon: "🤝"
+                },
+                {
+                  title: "Luxury Options",
+                  text: "From budget stays to 5-star hotels and world-class dining, everything is available.",
+                  icon: "🏨"
+                },
+              ].map((section, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="text-4xl mb-4">{section.icon}</div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    {section.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {section.text}
+                  </p>
                 </div>
               ))}
             </div>
-          )}
-        </section>
-
-        {/* Holiday Cards Section */}
-        <section className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2 sm:gap-4">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Escape to an Amazing Destination
-            </h2>
-            <a
-              href="/getaways"
-              className="inline-flex items-center px-3 py-2 text-sm sm:text-base font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-shadow shadow-md"
-              aria-label="View all getaways"
-            >
-              View All <span className="ml-1">&rarr;</span>
-            </a>
-          </div>
-
-          <p className="text-gray-700 mb-4 sm:mb-6 text-sm sm:text-base">
-            Explore breathtaking destinations tailored for relaxation, adventure, and unforgettable experiences...
-          </p>
-
-          {loadingGetaways ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
-            </div>
-          ) : getaways.length === 0 ? (
-            <p className="text-center text-gray-500 text-sm sm:text-base">
-              No getaways available
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {getaways.map((getaway, idx) => (
-                <div
-                  key={getaway._id}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 animate-fadeIn"
-                  style={{ animationDelay: `${idx * 100}ms` }}
-                >
-                  <a href="#" aria-label={`View ${getaway.title} details`}>
-                    <img
-                      className="rounded-t-lg w-full h-40 sm:h-48 object-cover"
-                      src={getaway.image}
-                      alt={getaway.title}
-                      loading="lazy"
-                    />
-                  </a>
-                  <div className="p-4 sm:p-5">
-                    <h5 className="mb-2 text-lg sm:text-xl font-bold tracking-tight text-gray-900">
-                      {getaway.title}
-                    </h5>
-                    <p className="mb-3 text-gray-700 text-sm sm:text-base line-clamp-3">
-                      {getaway.description}
-                    </p>
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
-                      Price: <span className="text-green-600">{getaway.price}</span>
-                    </p>
-                    {isCustomer && (
-                      <button
-                        onClick={() => {
-                          addToCart(getaway, "Getaway");
-                          toast.success(`${getaway.title} added to cart`);
-                        }}
-                        className="inline-flex items-center px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                        aria-label={`Book ${getaway.title}`}
-                      >
-                        Book Now
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Destination Hotel Card */}
-        <section className="p-4 sm:p-6">
-          <div className="flex flex-col md:flex-row bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden relative h-auto md:h-80">
-            <img
-              className="w-full md:w-1/2 h-48 sm:h-60 md:h-full object-cover"
-              src="https://images.unsplash.com/photo-1471922694854-ff1b63b20054?w=600&auto=format&fit=crop&q=60"
-              alt="Sarova WhiteSands Mombasa"
-              loading="lazy"
-            />
-            <div className="w-full md:w-1/2 p-4 sm:p-5 flex flex-col justify-center">
-              <h5 className="mb-2 text-lg sm:text-xl font-bold tracking-tight text-gray-900">
-                Sarova WhiteSands Mombasa
-              </h5>
-              <p className="mb-3 text-gray-700 text-sm sm:text-base line-clamp-4">
-                Nestled along the picturesque coastline of Mombasa, Sarova
-                WhiteSands is a luxurious beachfront resort offering stunning
-                ocean views, pristine white sandy beaches, and world-class
-                hospitality. Enjoy a tranquil retreat with lush tropical
-                gardens, five-star amenities, and a variety of water sports
-                activities.
-              </p>
-              <p className="text-base sm:text-lg font-semibold text-gray-900">
-                Price: <span className="text-green-600">Ksh 45,000 / night</span>
-              </p>
-            </div>
-            <a
-              href="#"
-              className="absolute top-2 right-2 text-gray-500 text-xs sm:text-sm"
-              aria-label="Advertisement"
-            >
-              Ad
-            </a>
-          </div>
-        </section>
-
-        {/* Why Major Cities Section */}
-        <section className="p-4 sm:p-6 bg-gray-100 mt-6 sm:mt-10 rounded-lg">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-            Why Major Cities Make Event Hosting More Exciting!
-          </h2>
-          <p className="text-gray-700 mb-4 text-sm sm:text-base">
-            Ever wondered why some events feel larger than life while others
-            struggle to capture attention? A big part of it comes down to
-            location. Hosting events in major cities comes with unique advantages that make them more thrilling, engaging, and successful.
-          </p>
-
-          {[
-            {
-              title: "Unmatched Infrastructure",
-              text: "Major cities are built for large-scale events. With world-class convention centers, top-notch hotels, and easy transportation, they provide a seamless experience for attendees. Whether it's New York, London, or Nairobi, the right infrastructure makes a huge difference.",
-            },
-            {
-              title: "Vibrant Entertainment & Culture",
-              text: "Big cities are cultural hubs filled with exciting nightlife, live performances, and fine dining. Event-goers can enjoy the experience beyond just the main event, making the trip even more worthwhile.",
-            },
-            {
-              title: "High Foot Traffic & Exposure",
-              text: "The sheer number of people in major cities means more exposure for your event. You get a built-in audience of locals, tourists, and business travelers who might be interested in attending.",
-            },
-            {
-              title: "Easier Marketing & Media Coverage",
-              text: "Big cities attract more media attention. Journalists, influencers, and bloggers are more likely to cover your event, giving it extra visibility.",
-            },
-            {
-              title: "Networking Opportunities",
-              text: "Business events, conferences, and exhibitions thrive in major cities because they attract industry leaders. Attendees get a chance to meet important connections, making the event even more valuable.",
-            },
-            {
-              title: "Endless Accommodation & Dining Options",
-              text: "From budget-friendly stays to luxury hotels, major cities offer a variety of accommodation options. Plus, attendees can enjoy world-class restaurants, making their experience unforgettable.",
-            },
-          ].map((section, idx) => (
-            <div key={idx} className="mt-4 animate-fadeIn" style={{ animationDelay: `${idx * 100}ms` }}>
-              <h3 className="text-lg sm:text-2xl font-semibold text-gray-900">
-                {section.title}
-              </h3>
-              <p className="text-gray-700 mb-3 text-sm sm:text-base">{section.text}</p>
-            </div>
-          ))}
-        </section>
-      </div>
+          </section>
+        </div>
       <Footer />
-    </>
+    </div>
   );
 }
 

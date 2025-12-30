@@ -3,6 +3,19 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import { toast } from "react-hot-toast";
+import SearchInput from "../Components/SearchInput";
+import { 
+  LayoutDashboard, 
+  Calendar, 
+  Map, 
+  Home, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  X,
+  Filter
+} from "lucide-react";
+import { confirmDelete } from "../Components/DeleteConfirmation";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -12,6 +25,8 @@ export default function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
+  
+  // Form State
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -19,12 +34,20 @@ export default function AdminDashboard() {
     imageUrl: "",
     type: "Event",
   });
+
+  // UI States
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("All");
 
-  const token = JSON.parse(localStorage.getItem("user"))?.token;
+  const token = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user"))?.token;
+    } catch {
+      return null;
+    }
+  })();
 
   useEffect(() => {
     fetchItems();
@@ -62,11 +85,9 @@ export default function AdminDashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
 
     if (!isValidImageUrl(form.imageUrl)) {
-      setError("❌ Please enter a valid image URL starting with http:// or https://");
+      toast.error("Please enter a valid image URL starting with http:// or https://");
       setLoading(false);
       return;
     }
@@ -90,7 +111,7 @@ export default function AdminDashboard() {
         }, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSuccess("✅ Item updated successfully!");
+        toast.success("Item updated successfully!");
       } else {
         await axios.post(`http://localhost:5000${endpoint}`, {
           title: form.title,
@@ -100,68 +121,41 @@ export default function AdminDashboard() {
         }, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSuccess("✅ Item added successfully!");
+        toast.success("Item added successfully!");
       }
 
       resetForm();
       setShowModal(false);
       fetchItems();
     } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        err.message ||
-        "Something went wrong. Please try again.";
-      setError(message);
+      const message = err.response?.data?.message || "Something went wrong.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = (item) => {
-    const toastId = toast.custom(
-      (t) => (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 max-w-md">
-          <p className="text-gray-800 mb-4 text-sm md:text-base">
-            Are you sure you want to delete <strong>{item.title}</strong>?
-          </p>
-          <div className="flex justify-end space-x-2">
-            <button
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm md:text-base"
-              onClick={() => toast.dismiss(t.id)}
-              aria-label="Cancel deletion"
-            >
-              No
-            </button>
-            <button
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm md:text-base"
-              onClick={async () => {
-                toast.dismiss(t.id);
-                try {
-                  const endpointMap = {
-                    Event: "/api/events",
-                    Getaway: "/api/getaways",
-                    Stay: "/api/stays",
-                  };
-                  const endpoint = endpointMap[item.type];
-                  await axios.delete(`http://localhost:5000${endpoint}/${item._id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
-                  toast.success("✅ Item deleted successfully!");
-                  fetchItems();
-                } catch (err) {
-                  console.error(err);
-                  toast.error("Failed to delete item");
-                }
-              }}
-              aria-label={`Confirm deletion of ${item.title}`}
-            >
-              Yes
-            </button>
-          </div>
-        </div>
-      ),
-      { duration: Infinity }
-    );
+    confirmDelete({
+      title: item.title,
+      onConfirm: async () => {
+        try {
+          const endpointMap = {
+            Event: "/api/events",
+            Getaway: "/api/getaways",
+            Stay: "/api/stays",
+          };
+          const endpoint = endpointMap[item.type];
+          await axios.delete(`http://localhost:5000${endpoint}/${item._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          toast.success("Item deleted successfully!");
+          fetchItems();
+        } catch (err) {
+          toast.error("Failed to delete item");
+        }
+      }
+    });
   };
 
   const handleEdit = (item) => {
@@ -185,7 +179,6 @@ export default function AdminDashboard() {
       imageUrl: "",
       type: "Event",
     });
-    setError("");
     setIsEditing(false);
     setCurrentId(null);
   };
@@ -198,271 +191,331 @@ export default function AdminDashboard() {
     }, 100);
   };
 
+  // Derived State for Filtering
+  const filteredItems = items.filter((item) => {
+    const matchesTab = activeTab === "All" || item.type === activeTab;
+    const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase()) || 
+                          item.description.toLowerCase().includes(search.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
+
+  // Stats
+  const stats = [
+    { label: "Total Items", value: items.length, icon: LayoutDashboard, color: "bg-blue-500" },
+    { label: "Events", value: items.filter(i => i.type === "Event").length, icon: Calendar, color: "bg-green-500" },
+    { label: "Getaways", value: items.filter(i => i.type === "Getaway").length, icon: Map, color: "bg-teal-500" },
+    { label: "Stays", value: items.filter(i => i.type === "Stay").length, icon: Home, color: "bg-indigo-500" },
+  ];
+
   return (
-    <>
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200 p-4 sm:p-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-6 text-gray-800 drop-shadow-sm">
-            Admin Dashboard
-          </h1>
-
-          {success && (
-            <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-700 border border-green-300 text-sm sm:text-base">
-              {success}
-            </div>
-          )}
-
+      
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 pt-24 pb-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard Overview</h1>
+            <p className="text-gray-500 mt-1">Manage your events, getaways, and stays.</p>
+          </div>
           <button
-            className="bg-green-600 hover:bg-green-700 transition-colors text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-md font-medium text-sm sm:text-base mb-6"
             onClick={openModal}
-            aria-label="Add new item"
+            className="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:-translate-y-0.5"
           >
-            ➕ Add New Item
+            <Plus className="w-5 h-5 mr-2" />
+             Add New Item
           </button>
+        </div>
 
-          {fetchLoading ? (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow">
+              <div>
+                <p className="text-sm font-medium text-gray-500">{stat.label}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+              </div>
+              <div className={`${stat.color} p-3 rounded-xl text-white shadow-sm`}>
+                <stat.icon className="w-6 h-6" />
+              </div>
             </div>
-          ) : items.length === 0 ? (
-            <div className="text-center py-6 text-gray-500 text-sm sm:text-base">
-              No items found
+          ))}
+        </div>
+
+        {/* Filters & Search */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            {/* Tabs */}
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
+              {["All", "Event", "Getaway", "Stay"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    activeTab === tab
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                  }`}
+                >
+                  {tab === "All" ? "All Items" : `${tab}s`}
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div className="w-full md:w-72">
+               <SearchInput onSearch={setSearch} placeholder="Search items..." />
+            </div>
+          </div>
+        </div>
+
+        {/* Content Table */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {fetchLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="text-center py-20 px-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
+                <Filter className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900">No items found</h3>
+              <p className="mt-1 text-gray-500">Try adjusting your search or filters.</p>
             </div>
           ) : (
             <>
-              {/* Desktop Table */}
-              <div className="hidden sm:block bg-white shadow-lg rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-100 text-gray-700 uppercase text-xs sm:text-sm">
-                      <tr>
-                        <th className="p-3 sm:p-4">Title</th>
-                        <th className="p-3 sm:p-4">Description</th>
-                        <th className="p-3 sm:p-4">Price</th>
-                        <th className="p-3 sm:p-4">Type</th>
-                        <th className="p-3 sm:p-4">Image</th>
-                        <th className="p-3 sm:p-4">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item) => (
-                        <tr
-                          key={item._id}
-                          className="border-t hover:bg-gray-50 transition"
-                        >
-                          <td className="p-3 sm:p-4 font-medium text-sm sm:text-base">
-                            {item.title}
-                          </td>
-                          <td className="p-3 sm:p-4 truncate max-w-[120px] sm:max-w-[200px] text-sm sm:text-base">
-                            {item.description}
-                          </td>
-                          <td className="p-3 sm:p-4 text-sm sm:text-base">{item.price}</td>
-                          <td className="p-3 sm:p-4 text-sm sm:text-base">{item.type}</td>
-                          <td className="p-3 sm:p-4">
-                            <img
-                              src={item.image}
-                              alt={item.title}
-                              className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-md"
-                            />
-                          </td>
-                          <td className="p-3 sm:p-4 space-x-2">
-                            <button
+              {/* Desktop View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50/50">
+                    <tr>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+                      <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {filteredItems.map((item) => (
+                      <tr key={item._id} className="hover:bg-gray-50/80 transition-colors group">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="h-12 w-12 flex-shrink-0">
+                              <img className="h-12 w-12 rounded-xl object-cover border border-gray-100" src={item.image} alt="" />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors">{item.title}</div>
+                              <div className="text-xs text-gray-400">ID: {item._id.slice(-6)}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            ${item.type === 'Event' ? 'bg-green-100 text-green-800' : 
+                              item.type === 'Getaway' ? 'bg-teal-100 text-teal-800' : 
+                              'bg-indigo-100 text-indigo-800'}`}>
+                            {item.type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                          {item.price}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-500 line-clamp-2 max-w-xs">{item.description}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end gap-2">
+                            <button 
                               onClick={() => handleEdit(item)}
-                              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors"
-                              aria-label={`Edit ${item.title}`}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Edit"
                             >
-                              Edit
+                              <Edit className="w-4 h-4" />
                             </button>
-                            <button
+                            <button 
                               onClick={() => handleDelete(item)}
-                              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors"
-                              aria-label={`Delete ${item.title}`}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
                             >
-                              Delete
+                              <Trash2 className="w-4 h-4" />
                             </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              {/* Mobile Cards */}
-              <div className="block sm:hidden space-y-4">
-                {items.map((item) => (
-                  <div
-                    key={item._id}
-                    className="bg-white border border-gray-200 rounded-lg shadow-sm p-4"
-                  >
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-12 h-12 object-cover rounded-md"
-                        />
-                        <h3 className="font-medium text-base">{item.title}</h3>
+              {/* Mobile View */}
+              <div className="md:hidden divide-y divide-gray-100">
+                {filteredItems.map((item) => (
+                  <div key={item._id} className="p-4 space-y-3">
+                    <div className="flex gap-4">
+                      <img className="h-20 w-20 rounded-xl object-cover border border-gray-100" src={item.image} alt="" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                           <h4 className="text-base font-semibold text-gray-900 truncate pr-2">{item.title}</h4>
+                           <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold
+                            ${item.type === 'Event' ? 'bg-green-50 text-green-700' : 
+                              item.type === 'Getaway' ? 'bg-teal-50 text-teal-700' : 
+                              'bg-indigo-50 text-indigo-700'}`}>
+                            {item.type}
+                           </span>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+                        <p className="text-sm font-bold text-gray-900 mt-2">{item.price}</p>
                       </div>
-                      <p className="text-gray-700 text-sm truncate">
-                        {item.description}
-                      </p>
-                      <p className="text-sm font-semibold text-gray-900">
-                        Price: <span className="text-green-600">{item.price}</span>
-                      </p>
-                      <p className="text-sm text-gray-700">Type: {item.type}</p>
-                      <div className="flex space-x-2">
-                        <button
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                       <button 
                           onClick={() => handleEdit(item)}
-                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors"
-                          aria-label={`Edit ${item.title}`}
+                          className="flex-1 py-2 bg-gray-50 text-blue-600 font-medium rounded-lg text-sm border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all flex items-center justify-center gap-2"
                         >
-                          Edit
+                          <Edit className="w-4 h-4" /> Edit
                         </button>
-                        <button
+                        <button 
                           onClick={() => handleDelete(item)}
-                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors"
-                          aria-label={`Delete ${item.title}`}
+                          className="flex-1 py-2 bg-gray-50 text-red-600 font-medium rounded-lg text-sm border border-gray-200 hover:bg-red-50 hover:border-red-200 transition-all flex items-center justify-center gap-2"
                         >
-                          Delete
+                          <Trash2 className="w-4 h-4" /> Delete
                         </button>
-                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </>
           )}
-
-          {showModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-              <div className="bg-white rounded-2xl shadow-2xl w-full sm:max-w-lg h-full sm:h-auto max-h-[90vh] overflow-y-auto p-4 sm:p-6 animate-fadeIn">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
-                    {isEditing ? "Edit Item" : "Add New Item"}
-                  </h2>
-                  <button
-                    className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl"
-                    onClick={() => setShowModal(false)}
-                    aria-label="Close modal"
-                    disabled={loading}
-                  >
-                    &times;
-                  </button>
-                </div>
-                <form onSubmit={handleSubmit}>
-                  <div className="space-y-4">
-                    <select
-                      name="type"
-                      value={form.type}
-                      onChange={handleChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none text-sm sm:text-base"
-                      required
-                      aria-label="Item type"
-                    >
-                      <option value="Event">Event</option>
-                      <option value="Getaway">Getaway</option>
-                      <option value="Stay">Stay</option>
-                    </select>
-
-                    <input
-                      ref={firstInputRef}
-                      name="title"
-                      value={form.title}
-                      onChange={handleChange}
-                      placeholder="Title"
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none text-sm sm:text-base"
-                      required
-                      aria-label="Item title"
-                    />
-
-                    <textarea
-                      name="description"
-                      value={form.description}
-                      onChange={handleChange}
-                      placeholder="Description"
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none resize-none h-24 text-sm sm:text-base"
-                      required
-                      aria-label="Item description"
-                    />
-
-                    <input
-                      name="price"
-                      value={form.price}
-                      onChange={handleChange}
-                      placeholder="Price"
-                      type="number"
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none text-sm sm:text-base"
-                      required
-                      min="0"
-                      aria-label="Item price"
-                    />
-
-                    <input
-                      name="imageUrl"
-                      value={form.imageUrl}
-                      onChange={handleChange}
-                      placeholder="Image URL"
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400 outline-none text-sm sm:text-base"
-                      required
-                      aria-label="Item image URL"
-                    />
-                    {form.imageUrl && isValidImageUrl(form.imageUrl) && (
-                      <img
-                        src={form.imageUrl}
-                        alt="Preview"
-                        className="w-full h-40 sm:h-48 object-cover rounded-lg border shadow"
-                      />
-                    )}
-
-                    {error && (
-                      <div className="p-3 rounded-lg bg-red-100 text-red-700 border border-red-300 text-sm sm:text-base">
-                        {error}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end space-x-3 mt-6">
-                    <button
-                      type="button"
-                      className="px-4 sm:px-5 py-2 sm:py-3 rounded-lg border border-gray-300 bg-gray-100 hover:bg-gray-200 text-sm sm:text-base"
-                      onClick={() => setShowModal(false)}
-                      disabled={loading}
-                      aria-label="Cancel"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 sm:px-5 py-2 sm:py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-md font-medium text-sm sm:text-base flex items-center"
-                      disabled={
-                        loading ||
-                        !form.title ||
-                        !form.description ||
-                        !form.price ||
-                        !form.imageUrl
-                      }
-                      aria-label={isEditing ? "Update item" : "Add item"}
-                    >
-                      {loading ? (
-                        <div className="flex items-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                          Saving...
-                        </div>
-                      ) : isEditing ? (
-                        "Update"
-                      ) : (
-                        "Add"
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
-    </>
+      </main>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setShowModal(false)}
+          ></div>
+          
+          <div className="relative bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200 border border-white/20">
+            {/* Modal Header */}
+            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50/50 to-white/50">
+              <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+                {isEditing ? "Edit Item" : "New Item"}
+              </h3>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Item Type</label>
+                <select
+                  name="type"
+                  value={form.type}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border-gray-200 focus:border-green-500 focus:ring-green-500 transition-colors"
+                >
+                  <option value="Event">Event</option>
+                  <option value="Getaway">Getaway</option>
+                  <option value="Stay">Stay</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  ref={firstInputRef}
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  placeholder="e.g., Tech Conference 2024"
+                  className="w-full rounded-xl border-gray-200 focus:border-green-500 focus:ring-green-500 transition-colors"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Price Amount</label>
+                   <input
+                    name="price"
+                    type="number"
+                    value={form.price}
+                    onChange={handleChange}
+                    placeholder="e.g., 5000"
+                    className="w-full rounded-xl border-gray-200 focus:border-green-500 focus:ring-green-500 transition-colors"
+                    required
+                    min="0"
+                  />
+                </div>
+                <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                   <input
+                    name="imageUrl"
+                    value={form.imageUrl}
+                    onChange={handleChange}
+                    placeholder="https://..."
+                    className="w-full rounded-xl border-gray-200 focus:border-green-500 focus:ring-green-500 transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Enter a detailed description..."
+                  rows="3"
+                  className="w-full rounded-xl border-gray-200 focus:border-green-500 focus:ring-green-500 transition-colors resize-none"
+                  required
+                />
+              </div>
+
+              {/* Image Preview */}
+              {form.imageUrl && isValidImageUrl(form.imageUrl) && (
+                <div className="relative rounded-xl overflow-hidden h-32 border border-gray-100 bg-gray-50 flex items-center justify-center">
+                  <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                </div>
+              )}
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all shadow-md flex items-center"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : isEditing ? "Update Changes" : "Create Item"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

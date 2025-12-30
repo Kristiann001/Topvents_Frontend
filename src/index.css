@@ -1,3 +1,16 @@
 @import "tailwindcss";
 @plugin "flowbite-react/plugin/tailwindcss";
 @source "../.flowbite-react/class-list.json";
+
+@theme {
+  --font-sans: "Outfit", sans-serif;
+}
+
+:root {
+  font-family: "Outfit", sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply antialiased bg-gray-50 text-gray-900;
+}

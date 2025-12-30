@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+import SearchInput from "../Components/SearchInput";
+import { confirmDelete } from "../Components/DeleteConfirmation";
 import { toast } from "react-hot-toast";
 import { CartContext } from "../Context/CartContext";
 
@@ -10,7 +12,8 @@ function Stays() {
 
   const storedUser = (() => {
     try {
-      return JSON.parse(localStorage.getItem("user"));
+      const user = localStorage.getItem("user");
+      return user ? JSON.parse(user) : null;
     } catch {
       return null;
     }
@@ -21,11 +24,23 @@ function Stays() {
 
   const [stays, setStays] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     const fetchStays = async () => {
+      setLoading(true);
       try {
-        const res = await axios.get("http://localhost:5000/api/stays");
+        const query = debouncedSearch ? `?search=${debouncedSearch}` : "";
+        const res = await axios.get(`http://localhost:5000/api/stays${query}`);
         setStays(res.data);
       } catch (err) {
         toast.error("Failed to fetch stays");
@@ -34,112 +49,112 @@ function Stays() {
       }
     };
     fetchStays();
-  }, []);
+  }, [debouncedSearch]);
 
   const handleDelete = (stay) => {
     if (!isAdmin || !token) {
       toast.error("You must be logged in as an Admin");
       return;
     }
-    const toastId = toast.custom(
-      (t) => (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 max-w-md transition-opacity duration-300">
-          <p className="text-gray-800 mb-4 text-sm sm:text-base">
-            Are you sure you want to delete <strong>{stay.title}</strong>?
-          </p>
-          <div className="flex justify-end space-x-2">
-            <button
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm sm:text-base"
-              onClick={() => toast.dismiss(t.id)}
-              aria-label="Cancel deletion"
-            >
-              No
-            </button>
-            <button
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base"
-              onClick={async () => {
-                toast.dismiss(t.id);
-                try {
-                  await axios.delete(`http://localhost:5000/api/stays/${stay._id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
-                  setStays(stays.filter((s) => s._id !== stay._id));
-                  toast.success("Stay deleted successfully");
-                } catch (err) {
-                  toast.error(err.response?.data?.message || "Failed to delete stay");
-                }
-              }}
-              aria-label={`Confirm deletion of ${stay.title}`}
-            >
-              Yes
-            </button>
-          </div>
-        </div>
-      ),
-      { duration: Infinity }
-    );
+
+    confirmDelete({
+      title: stay.title,
+      onConfirm: async () => {
+        try {
+          await axios.delete(`http://localhost:5000/api/stays/${stay._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setStays(stays.filter((s) => s._id !== stay._id));
+          toast.success("Stay deleted successfully");
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Failed to delete stay");
+        }
+      }
+    });
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="relative bg-stone-700 text-white py-12 sm:py-16 px-4 sm:px-6 text-center">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
-          Hotels & Stays
-        </h1>
-        <p className="max-w-xl sm:max-w-2xl mx-auto text-sm sm:text-lg opacity-90">
-          Discover comfort and elegance in our curated selection of hotels,
-          offering world-class hospitality, modern amenities, and unforgettable
-          experiences.
-        </p>
+      
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br bg-stone-600 text-white py-20 px-4 sm:px-6 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10 max-w-3xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 tracking-tight">
+            Hotels & Stays
+          </h1>
+          <p className="text-lg sm:text-xl text-indigo-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Discover comfort and elegance in our curated selection of hotels,
+            offering world-class hospitality, modern amenities, and unforgettable
+            experiences.
+          </p>
+          <SearchInput onSearch={setSearch} placeholder="Search stays & hotels..." />
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
-          Available Stays
-        </h2>
+      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 py-12 w-full">
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Available Stays
+          </h2>
+          {stays.length > 0 && (
+            <span className="text-gray-500 text-sm font-medium">
+              Showing {stays.length} results
+            </span>
+          )}
+        </div>
+
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600"></div>
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
           </div>
         ) : stays.length === 0 ? (
-          <p className="text-center text-gray-500 text-sm sm:text-base">
-            No stays available
-          </p>
+          <div className="text-center py-20">
+            <p className="text-gray-500 text-lg">No stays found matching criteria</p>
+            <button 
+              onClick={() => setSearch("")}
+              className="mt-4 text-green-600 hover:text-green-700 font-medium"
+            >
+              Clear search
+            </button>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 pb-12 sm:pb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
             {stays.map((item, idx) => (
               <div
                 key={item._id}
-                className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 animate-fadeIn"
-                style={{ animationDelay: `${idx * 100}ms` }}
+                className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col"
+                style={{ animationDelay: `${idx * 50}ms` }}
               >
-                <a href="#" aria-label={`View ${item.title} details`}>
-                  <img
+                <div className="relative aspect-video overflow-hidden">
+                   <img
                     src={item.image}
                     alt={item.title}
-                    className="rounded-t-lg w-full h-40 sm:h-48 object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                     loading="lazy"
                   />
-                </a>
-                <div className="p-4 sm:p-5">
-                  <h5 className="mb-2 text-lg sm:text-xl font-bold tracking-tight text-gray-900">
+                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-green-700 shadow-sm">
+                    {item.price}
+                  </div>
+                </div>
+                
+                <div className="p-5 flex flex-col flex-grow">
+                  <h5 className="mb-2 text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-green-600 transition-colors">
                     {item.title}
                   </h5>
-                  <p className="mb-3 text-gray-700 text-sm sm:text-base line-clamp-3">
+                  <p className="mb-4 text-gray-600 text-sm line-clamp-2 flex-grow">
                     {item.description}
                   </p>
-                  <p className="mb-3 text-base sm:text-lg font-semibold text-gray-900">
-                    Price: <span className="text-green-600">{item.price}</span>
-                  </p>
-                  <div className="flex gap-2">
+                  
+                  <div className="mt-auto pt-4 border-t border-gray-50 flex gap-3">
                     {storedUser?.role === "Customer" && (
                       <button
                         onClick={() => {
                           addToCart(item, "Stay");
                           toast.success(`${item.title} added to cart`);
                         }}
-                        className="flex-1 px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-xl hover:bg-green-700 active:scale-95 transition-all shadow-sm hover:shadow-green-200"
                         aria-label={`Book ${item.title}`}
                       >
                         Book Now
@@ -148,11 +163,19 @@ function Stays() {
                     {storedUser?.role === "Admin" && (
                       <button
                         onClick={() => handleDelete(item)}
-                        className="flex-1 px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 active:scale-95 transition-all shadow-sm hover:shadow-red-200"
                         aria-label={`Delete ${item.title}`}
                       >
                         Delete
                       </button>
+                    )}
+                     {!storedUser && (
+                       <button
+                       disabled
+                       className="flex-1 px-4 py-2 text-sm font-medium text-gray-400 bg-gray-100 rounded-xl cursor-not-allowed"
+                     >
+                       Login to Book
+                     </button>
                     )}
                   </div>
                 </div>
@@ -162,7 +185,7 @@ function Stays() {
         )}
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
 
