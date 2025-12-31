@@ -10,7 +10,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), flowbiteReact()],
-  base: import.meta.env.VITE_BASE_PATH || "/Topvents_Frontend",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
