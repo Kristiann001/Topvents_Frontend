@@ -7,6 +7,8 @@ import Getaways from "./Pages/Getaways";
 import Stays from "./Pages/Stays";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 import Cart from "./Pages/Cart";
 import AdminDashboard from "./Pages/AdminDashboard";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
@@ -26,6 +28,8 @@ function App() {
           <Route path="/stays" element={<Stays />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/dashboard" element={<AdminDashboard />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />

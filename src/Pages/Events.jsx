@@ -42,7 +42,8 @@ function Events() {
         const query = debouncedSearch ? `?search=${debouncedSearch}` : "";
         const res = await axios.get(`http://localhost:5000/api/events${query}`);
         setEvents(res.data);
-      } catch (err) {
+      } catch {
+        // Fixed: Removed unused 'err' variable
         toast.error("Failed to fetch events");
       } finally {
         setLoading(false);

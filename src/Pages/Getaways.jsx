@@ -42,7 +42,8 @@ function Getaways() {
         const query = debouncedSearch ? `?search=${debouncedSearch}` : "";
         const res = await axios.get(`http://localhost:5000/api/getaways${query}`);
         setGetaways(res.data);
-      } catch (err) {
+      } catch {
+        // Fixed: Removed unused 'err' variable
         toast.error("Failed to fetch getaways");
       } finally {
         setLoading(false);

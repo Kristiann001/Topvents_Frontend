@@ -128,9 +128,18 @@ function Login() {
               </div>
             </div>
 
+            <div className="mt-4 text-right">
+              <a 
+                href="/forgot-password" 
+                className="text-sm font-medium text-green-600 hover:text-green-500 transition-colors hover:underline"
+              >
+                Forgot Password?
+              </a>
+            </div>
+
             <button
               type="submit"
-              className="mt-8 w-full text-white bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 font-bold rounded-xl text-sm px-5 py-3.5 transition-all shadow-lg shadow-green-500/30 transform hover:-translate-y-0.5 active:scale-95"
+              className="mt-6 w-full text-white bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 font-bold rounded-xl text-sm px-5 py-3.5 transition-all shadow-lg shadow-green-500/30 transform hover:-translate-y-0.5 active:scale-95"
             >
               Sign In
             </button>
